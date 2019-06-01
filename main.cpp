@@ -16,13 +16,13 @@ int main() {
 	Input input2;
 	Input input3;
 	
-	MultiplyInputs mult1(&input1, &input2);
-	MultiplyInputs mult2(&input1, &input3);
-	MultiplyInputs mult3(&mult1, &mult2);
-	MultiplyInputs mult4(&mult2, &mult3);
-	SubtractInputs diff(&mult1, &mult3);
+	MultiplyNodes mult1(&input1, &input2);
+	MultiplyNodes mult2(&input1, &input3);
+	MultiplyNodes mult3(&mult1, &mult2);
+	MultiplyNodes mult4(&mult2, &mult3);
+	SubtractNodes diff(&mult1, &mult3);
 	AddConstant sum(&diff, 10);
-	DivideInputs mult6(&mult4, &sum);
+	DivideNodes mult6(&mult4, &sum);
 	
 	Function func;
 	

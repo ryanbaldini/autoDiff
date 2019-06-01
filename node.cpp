@@ -7,17 +7,17 @@ Node::Node(): value(0), derivative(0), evaluated(false), differentiatedParents(f
 }
 
 void Node::evaluate() {
+	
+	if(evaluated) {
+		return;
+	}
+	
 	//don't go if not all parents evaluated
 	int nParents = parents.size();
 	for(int i=0; i<nParents; i++) {
 		if(!parents[i]->evaluated) {
 			return;
 		}
-	}
-	
-	//TODO does this work?
-	if(evaluated) {
-		return;
 	}
 	
 	fillMyValue();
@@ -32,17 +32,17 @@ void Node::evaluate() {
 }
 
 void Node::differentiate() {
+	
+	if(differentiatedParents) {
+		return;
+	}
+	
 	//don't go if not all children differentiated their parents
 	int nChildren = children.size();
 	for(int i=0; i<nChildren; i++) {
 		if(!children[i]->differentiatedParents) {
 			return;
 		}
-	}
-	
-	//TODO does this work?
-	if(differentiatedParents) {
-		return;
 	}
 	
 	updateParentDerivatives();
@@ -131,62 +131,62 @@ void AddConstant::updateParentDerivatives() {
 	parents[0]->derivative += derivative;
 }
 
-AddInputs::AddInputs(Node* node1, Node* node2) {
+AddNodes::AddNodes(Node* node1, Node* node2) {
 	setParent(node1);
 	setParent(node2);
 }
 
-void AddInputs::fillMyValue() {
+void AddNodes::fillMyValue() {
 	value = (parents[0]->value) + (parents[1]->value);
 }
 
-void AddInputs::updateParentDerivatives() {
+void AddNodes::updateParentDerivatives() {
 	parents[0]->derivative += derivative;
 	parents[1]->derivative += derivative;
 }
 
-SubtractInputs::SubtractInputs(Node* node1, Node* node2) {
+SubtractNodes::SubtractNodes(Node* node1, Node* node2) {
 	setParent(node1);
 	setParent(node2);
 }
 
-void SubtractInputs::fillMyValue() {
+void SubtractNodes::fillMyValue() {
 	value = (parents[0]->value) - (parents[1]->value);
 }
 
-void SubtractInputs::updateParentDerivatives() {
+void SubtractNodes::updateParentDerivatives() {
 	parents[0]->derivative += derivative;
 	parents[1]->derivative -= derivative;
 }
 
-MultiplyInputs::MultiplyInputs(Node* node1, Node* node2) {
+MultiplyNodes::MultiplyNodes(Node* node1, Node* node2) {
 	setParent(node1);
 	setParent(node2);
 }
 
-void MultiplyInputs::fillMyValue() {
+void MultiplyNodes::fillMyValue() {
 	value = (parents[0]->value) * (parents[1]->value);
 	evaluated = true;
 }
 
-void MultiplyInputs::updateParentDerivatives() {
+void MultiplyNodes::updateParentDerivatives() {
 	parents[0]->derivative += derivative * parents[1]->value;
 	parents[1]->derivative += derivative * parents[0]->value;
 }
 
-DivideInputs::DivideInputs(Node* node1, Node* node2) {
+DivideNodes::DivideNodes(Node* node1, Node* node2) {
 	setParent(node1);
 	setParent(node2);
 }
 
-void DivideInputs::fillMyValue() {
+void DivideNodes::fillMyValue() {
 	if(parents[1]->value == 0.0) {
-		throw "DivideInputs node attempted to divide by 0.0";
+		throw "DivideNodes node attempted to divide by 0.0";
 	}
 	value = (parents[0]->value) / (parents[1]->value);
 }
 
-void DivideInputs::updateParentDerivatives() {
+void DivideNodes::updateParentDerivatives() {
 	parents[0]->derivative += derivative / (parents[1]->value);
 	double p1Squared = (parents[1]->value) * (parents[1]->value);
 	parents[1]->derivative -= derivative * (parents[0]->value) / p1Squared;

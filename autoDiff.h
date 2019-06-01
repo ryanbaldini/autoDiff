@@ -39,32 +39,32 @@ class AddConstant: public Node {
 		double constant;
 };
 
-class AddInputs: public Node {
+class AddNodes: public Node {
 	public:
-		AddInputs(Node* node1, Node* node2);
+		AddNodes(Node* node1, Node* node2);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 };
 
 //subtracts the second arg from the first
-class SubtractInputs: public Node {
+class SubtractNodes: public Node {
 	public:
-		SubtractInputs(Node* node1, Node* node2);
+		SubtractNodes(Node* node1, Node* node2);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 };
 
-class MultiplyInputs: public Node {
+class MultiplyNodes: public Node {
 	public:
-		MultiplyInputs(Node* node1, Node* node2);
+		MultiplyNodes(Node* node1, Node* node2);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 };
 
 //divides the second arg by the first
-class DivideInputs: public Node {
+class DivideNodes: public Node {
 	public:
-		DivideInputs(Node* node1, Node* node2);
+		DivideNodes(Node* node1, Node* node2);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 };
