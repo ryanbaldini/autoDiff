@@ -66,6 +66,27 @@ void Node::updateParentDerivatives() {
 	return;
 }
 
+vector<Node*> Node::getDescendantNodes() {
+	vector<Node*> descendantNodes;
+	int nChildren = children.size();
+	if(nChildren == 0) {
+		return descendantNodes;
+	}
+	for(int i=0; i<nChildren; i++) {
+		Node* child = children[i];
+		descendantNodes.push_back(child);
+		vector<Node*> childDescendants = child->getDescendantNodes(); //recursive
+		int nChildDescendants = childDescendants.size();
+		//put in descendantNodes if not in there yet
+		for(int j=0; j<nChildDescendants; j++) {
+			if(find(descendantNodes.begin(), descendantNodes.end(), childDescendants[j]) == descendantNodes.end()) {
+				descendantNodes.push_back(childDescendants[j]);
+			}
+		}
+	}
+	return descendantNodes;
+}
+
 vector<Node*> Node::findTerminalNodes() {
 	vector<Node*> terminalOps;
 	int nChildren = children.size();
@@ -85,25 +106,6 @@ vector<Node*> Node::findTerminalNodes() {
 		}
 	}
 	return terminalOps;
-}
-
-void Node::setMySubNetworkEvaluatedFalse() {
-	evaluated = false;
-	int nChildren = children.size();
-	for(int i=0; i<nChildren; i++) {
-		children[i]->setMySubNetworkEvaluatedFalse();
-	}
-	return;
-}
-
-void Node::setMySubNetworkDifferentiatedFalse() {
-	differentiatedParents = false;
-	int nChildren = children.size();
-	for(int i=0; i<nChildren; i++) {
-		children[i]->derivative = 0;
-		children[i]->setMySubNetworkDifferentiatedFalse();
-	}
-	return;
 }
 
 void Node::setParent(Node* node) {

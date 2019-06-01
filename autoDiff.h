@@ -19,9 +19,8 @@ class Node {
 		void differentiate();
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
+		vector<Node*> getDescendantNodes();
 		vector<Node*> findTerminalNodes();
-		void setMySubNetworkEvaluatedFalse();
-		void setMySubNetworkDifferentiatedFalse();
 		void setParent(Node* node);
 };
 
@@ -74,6 +73,7 @@ class DivideNodes: public Node {
 //alternatively, could allow use to build function further, and then "compile" it (which checks for errors, etc)
 class Function {
 	public:
+		vector<Node*> nodes;
 		vector<Input*> inputNodes;
 		Node* outputNode;
 
