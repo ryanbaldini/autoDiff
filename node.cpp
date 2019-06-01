@@ -108,9 +108,9 @@ vector<Node*> Node::findTerminalNodes() {
 	return terminalOps;
 }
 
-void Node::setParent(Node* node) {
-	parents.push_back(node);
-	node->children.push_back(this);
+void Node::setParent(Node& node) {
+	parents.push_back(&node);
+	node.children.push_back(this);
 }
 
 void Input::fillMyValue() {
@@ -121,7 +121,7 @@ void Input::updateParentDerivatives() {
 	return;
 }
 
-AddConstant::AddConstant(Node* node, double constant_): constant(constant_) {
+AddConstant::AddConstant(Node& node, double constant_): constant(constant_) {
 	setParent(node);
 }
 
@@ -133,7 +133,7 @@ void AddConstant::updateParentDerivatives() {
 	parents[0]->derivative += derivative;
 }
 
-AddNodes::AddNodes(Node* node1, Node* node2) {
+AddNodes::AddNodes(Node& node1, Node& node2) {
 	setParent(node1);
 	setParent(node2);
 }
@@ -147,7 +147,7 @@ void AddNodes::updateParentDerivatives() {
 	parents[1]->derivative += derivative;
 }
 
-SubtractNodes::SubtractNodes(Node* node1, Node* node2) {
+SubtractNodes::SubtractNodes(Node& node1, Node& node2) {
 	setParent(node1);
 	setParent(node2);
 }
@@ -161,7 +161,7 @@ void SubtractNodes::updateParentDerivatives() {
 	parents[1]->derivative -= derivative;
 }
 
-MultiplyNodes::MultiplyNodes(Node* node1, Node* node2) {
+MultiplyNodes::MultiplyNodes(Node& node1, Node& node2) {
 	setParent(node1);
 	setParent(node2);
 }
@@ -176,7 +176,7 @@ void MultiplyNodes::updateParentDerivatives() {
 	parents[1]->derivative += derivative * parents[0]->value;
 }
 
-DivideNodes::DivideNodes(Node* node1, Node* node2) {
+DivideNodes::DivideNodes(Node& node1, Node& node2) {
 	setParent(node1);
 	setParent(node2);
 }

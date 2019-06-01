@@ -21,7 +21,7 @@ class Node {
 		virtual void updateParentDerivatives();
 		vector<Node*> getDescendantNodes();
 		vector<Node*> findTerminalNodes();
-		void setParent(Node* node);
+		void setParent(Node& node);
 };
 
 class Input: public Node {
@@ -32,7 +32,7 @@ class Input: public Node {
 
 class AddConstant: public Node {
 	public:
-		AddConstant(Node* node, double constant_);
+		AddConstant(Node& node, double constant_);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 	private:
@@ -41,7 +41,7 @@ class AddConstant: public Node {
 
 class AddNodes: public Node {
 	public:
-		AddNodes(Node* node1, Node* node2);
+		AddNodes(Node& node1, Node& node2);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 };
@@ -49,14 +49,14 @@ class AddNodes: public Node {
 //subtracts the second arg from the first
 class SubtractNodes: public Node {
 	public:
-		SubtractNodes(Node* node1, Node* node2);
+		SubtractNodes(Node& node1, Node& node2);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 };
 
 class MultiplyNodes: public Node {
 	public:
-		MultiplyNodes(Node* node1, Node* node2);
+		MultiplyNodes(Node& node1, Node& node2);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 };
@@ -64,7 +64,7 @@ class MultiplyNodes: public Node {
 //divides the second arg by the first
 class DivideNodes: public Node {
 	public:
-		DivideNodes(Node* node1, Node* node2);
+		DivideNodes(Node& node1, Node& node2);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 };

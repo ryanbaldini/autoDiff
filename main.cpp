@@ -19,13 +19,13 @@ int main() {
 	Input x3;
 	
 	//create downstream nodes via computations
-	MultiplyNodes mult1(&x1, &x2);
-	MultiplyNodes mult2(&x1, &x3);
-	MultiplyNodes mult3(&mult1, &mult2);
-	MultiplyNodes mult4(&mult2, &mult3);
-	SubtractNodes diff(&mult1, &mult3);
-	AddConstant sum(&diff, 10);
-	DivideNodes mult6(&mult4, &sum);
+	MultiplyNodes mult1(x1, x2);
+	MultiplyNodes mult2(x1, x3);
+	MultiplyNodes mult3(mult1, mult2);
+	MultiplyNodes mult4(mult2, mult3);
+	SubtractNodes diff(mult1, mult3);
+	AddConstant sum(diff, 10);
+	DivideNodes mult6(mult4, sum);
 	
 	//this computational graph computes the following expression
 	//(x1*x3)*(x1*x2)*(x1*x3) / (((x1*x2)-(x1*x2)*(x1*x3))+10)
