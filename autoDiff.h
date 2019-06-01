@@ -4,6 +4,7 @@
 
 using namespace std;
 
+//virtual class; not to be used directly
 class Node {
 	public:
 		double value;
