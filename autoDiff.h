@@ -31,12 +31,12 @@ class Input: public Node {
 };
 
 class AddConstant: public Node {
+	private:
+		double constant;
 	public:
 		AddConstant(Node& node, double constant_);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
-	private:
-		double constant;
 };
 
 class AddNodes: public Node {
@@ -62,12 +62,12 @@ class MultiplyNodes: public Node {
 };
 
 class MultiplyByConstant: public Node {
+	private:
+		double constant;
 	public:
 		MultiplyByConstant(Node& node, double constant_);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
-	private:
-		double constant;
 };
 
 //divides the second arg by the first
@@ -81,11 +81,12 @@ class DivideNodes: public Node {
 //second constructor requires that the function's graph is completely built when constructed
 //alternatively, could allow use to build function further, and then "compile" it (which checks for errors, etc)
 class Function {
-	public:
+	private:
 		vector<Node*> nodes;
 		vector<Input*> inputNodes;
 		Node* outputNode;
 
+	public:
 		Function();
 		Function(vector<Input*> inputNodes_);
 		double evaluate(vector<double> args);
