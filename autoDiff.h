@@ -61,6 +61,15 @@ class MultiplyNodes: public Node {
 		virtual void updateParentDerivatives();
 };
 
+class MultiplyByConstant: public Node {
+	public:
+		MultiplyByConstant(Node& node, double constant_);
+		virtual void fillMyValue();
+		virtual void updateParentDerivatives();
+	private:
+		double constant;
+};
+
 //divides the second arg by the first
 class DivideNodes: public Node {
 	public:

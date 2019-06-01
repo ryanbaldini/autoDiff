@@ -24,11 +24,12 @@ int main() {
 	MultiplyNodes mult3(mult1, mult2);
 	MultiplyNodes mult4(mult2, mult3);
 	SubtractNodes diff(mult1, mult3);
-	AddConstant sum(diff, 10);
-	DivideNodes mult6(mult4, sum);
+	AddConstant sum(diff, 10.0);
+	DivideNodes div(mult4, sum);
+	MultiplyByConstant mult7(div, 2.0);
 	
 	//this computational graph computes the following expression
-	//(x1*x3)*(x1*x2)*(x1*x3) / (((x1*x2)-(x1*x2)*(x1*x3))+10)
+	// 2 * (x1*x3)*(x1*x2)*(x1*x3) / (((x1*x2)-(x1*x2)*(x1*x3))+10)
 	
 	try {
 		vector<Input*> inputs;

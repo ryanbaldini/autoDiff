@@ -168,12 +168,23 @@ MultiplyNodes::MultiplyNodes(Node& node1, Node& node2) {
 
 void MultiplyNodes::fillMyValue() {
 	value = (parents[0]->value) * (parents[1]->value);
-	evaluated = true;
 }
 
 void MultiplyNodes::updateParentDerivatives() {
 	parents[0]->derivative += derivative * parents[1]->value;
 	parents[1]->derivative += derivative * parents[0]->value;
+}
+
+MultiplyByConstant::MultiplyByConstant(Node& node, double constant_): constant(constant_) {
+	setParent(node);
+}
+
+void MultiplyByConstant::fillMyValue() {
+	value = (parents[0]->value) * constant;
+}
+
+void MultiplyByConstant::updateParentDerivatives() {
+	parents[0]->derivative += derivative * constant;
 }
 
 DivideNodes::DivideNodes(Node& node1, Node& node2) {
