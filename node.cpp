@@ -187,6 +187,9 @@ void DivideNodes::fillMyValue() {
 }
 
 void DivideNodes::updateParentDerivatives() {
+	if(parents[1]->value == 0.0) {
+		throw "DivideNodes node attempted to divide by 0.0";
+	}
 	parents[0]->derivative += derivative / (parents[1]->value);
 	double p1Squared = (parents[1]->value) * (parents[1]->value);
 	parents[1]->derivative -= derivative * (parents[0]->value) / p1Squared;
