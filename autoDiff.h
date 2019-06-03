@@ -24,6 +24,8 @@ class Node {
 	
 	public:
 		Node();
+		double getValue();
+		double getDerivative();
 		
 		friend class Input;
 		friend class AddConstant;

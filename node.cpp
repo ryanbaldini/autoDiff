@@ -6,6 +6,14 @@ using namespace std;
 Node::Node(): value(0), derivative(0), evaluated(false), differentiatedParents(false) {
 }
 
+double Node::getValue() {
+	return value;
+}
+
+double Node::getDerivative() {
+	return derivative;
+}
+
 void Node::evaluate() {
 	
 	if(evaluated) {
