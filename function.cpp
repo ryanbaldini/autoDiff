@@ -3,9 +3,6 @@
 
 using namespace std;
 
-Function::Function(): outputNode(nullptr) {
-}
-
 Function::Function(vector<Input*> inputNodes_): inputNodes(inputNodes_), outputNode(nullptr) {
 	int nInputs = inputNodes.size();
 	if(nInputs == 0) {

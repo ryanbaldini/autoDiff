@@ -6,7 +6,7 @@ using namespace std;
 
 //virtual class; not to be used directly
 class Node {
-	public:
+	protected:
 		double value;
 		double derivative;
 		vector<Node*> parents;
@@ -14,7 +14,6 @@ class Node {
 		bool evaluated;
 		bool differentiatedParents;
 		
-		Node();
 		void evaluate();
 		void differentiate();
 		virtual void fillMyValue();
@@ -22,10 +21,22 @@ class Node {
 		vector<Node*> getDescendantNodes();
 		vector<Node*> findTerminalNodes();
 		void setParent(Node& node);
+	
+	public:
+		Node();
+		
+		friend class Input;
+		friend class AddConstant;
+		friend class AddNodes;
+		friend class SubtractNodes;
+		friend class MultiplyNodes;
+		friend class MultiplyByConstant;
+		friend class DivideNodes;
+		friend class Function;
 };
 
 class Input: public Node {
-	public:
+	private:
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 };
@@ -33,52 +44,56 @@ class Input: public Node {
 class AddConstant: public Node {
 	private:
 		double constant;
-	public:
-		AddConstant(Node& node, double constant_);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
+	public:
+		AddConstant(Node& node, double constant_);
 };
 
 class AddNodes: public Node {
-	public:
-		AddNodes(Node& node1, Node& node2);
+	private:
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
+	public:
+		AddNodes(Node& node1, Node& node2);
 };
 
 //subtracts the second arg from the first
 class SubtractNodes: public Node {
-	public:
-		SubtractNodes(Node& node1, Node& node2);
+	private:
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
+	public:
+		SubtractNodes(Node& node1, Node& node2);
 };
 
 class MultiplyNodes: public Node {
-	public:
-		MultiplyNodes(Node& node1, Node& node2);
+	private:
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
+	public:
+		MultiplyNodes(Node& node1, Node& node2);
 };
 
 class MultiplyByConstant: public Node {
 	private:
 		double constant;
-	public:
-		MultiplyByConstant(Node& node, double constant_);
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
+	public:
+		MultiplyByConstant(Node& node, double constant_);
 };
 
 //divides the second arg by the first
 class DivideNodes: public Node {
-	public:
-		DivideNodes(Node& node1, Node& node2);
+	private:
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
+	public:
+		DivideNodes(Node& node1, Node& node2);
 };
 
-//second constructor requires that the function's graph is completely built when constructed
+//constructor requires that the function's graph is completely built when constructed
 //alternatively, could allow use to build function further, and then "compile" it (which checks for errors, etc)
 class Function {
 	private:
@@ -87,7 +102,6 @@ class Function {
 		Node* outputNode;
 
 	public:
-		Function();
 		Function(vector<Input*> inputNodes_);
 		double evaluate(vector<double> args);
 		vector<double> differentiate(vector<double> args);
