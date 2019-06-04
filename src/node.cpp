@@ -146,13 +146,29 @@ AddNodes::AddNodes(Node& node1, Node& node2) {
 	setParent(node2);
 }
 
+AddNodes::AddNodes(vector<Node*>& nodes) {
+	int nNodes = nodes.size();
+	if(nNodes <= 1) {
+		throw "AddNodes called on less than 2 nodes. Need at least 2.";
+	}
+	for(int i=0; i<nNodes; i++) {
+		setParent(*nodes[i]);
+	}
+}
+
 void AddNodes::fillMyValue() {
-	value = (parents[0]->value) + (parents[1]->value);
+	int nParents = parents.size();
+	value = 0.0;
+	for(int i=0; i<nParents; i++) {
+		value += parents[i]->value;
+	}
 }
 
 void AddNodes::updateParentDerivatives() {
-	parents[0]->derivative += derivative;
-	parents[1]->derivative += derivative;
+	int nParents = parents.size();
+	for(int i=0; i<nParents; i++) {
+		parents[i]->derivative += derivative;
+	}
 }
 
 SubtractNodes::SubtractNodes(Node& node1, Node& node2) {
@@ -174,13 +190,35 @@ MultiplyNodes::MultiplyNodes(Node& node1, Node& node2) {
 	setParent(node2);
 }
 
+MultiplyNodes::MultiplyNodes(vector<Node*>& nodes) {
+	int nNodes = nodes.size();
+	if(nNodes <= 1) {
+		throw "MultiplyNodes called on less than 2 nodes. Need at least 2.";
+	}
+	for(int i=0; i<nNodes; i++) {
+		setParent(*nodes[i]);
+	}
+}
+
 void MultiplyNodes::fillMyValue() {
-	value = (parents[0]->value) * (parents[1]->value);
+	int nParents = parents.size();
+	value = 1.0;
+	for(int i=0; i<nParents; i++) {
+		value *= parents[i]->value;
+	}
 }
 
 void MultiplyNodes::updateParentDerivatives() {
-	parents[0]->derivative += derivative * parents[1]->value;
-	parents[1]->derivative += derivative * parents[0]->value;
+	int nParents = parents.size();
+	for(int i=0; i<nParents; i++) {
+		double prod = 1.0;
+		for(int j=0; j<nParents; j++) {
+			if(j != i) {
+				prod *= parents[j]->value;
+			}
+		}
+		parents[i]->derivative += derivative * prod;
+	}
 }
 
 MultiplyByConstant::MultiplyByConstant(Node& node, double constant_): constant(constant_) {

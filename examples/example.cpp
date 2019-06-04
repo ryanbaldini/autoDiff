@@ -17,7 +17,7 @@ int main() {
 	Input x1;
 	Input x2;
 	Input x3;
-	
+		
 	//create downstream nodes via computations
 	MultiplyNodes mult1(x1, x2);
 	MultiplyNodes mult2(x1, x3);
@@ -26,16 +26,15 @@ int main() {
 	SubtractNodes diff(mult1, mult3);
 	AddConstant sum(diff, 10.0);
 	DivideNodes div(mult4, sum);
-	MultiplyByConstant mult7(div, 2.0);
+	MultiplyByConstant mult7(div, 2.0);	
+	vector<Node*> args = {&sum, &div, &mult7};
+	MultiplyNodes output(args);
 	
 	//this computational graph computes the following expression
 	// 2 * (x1*x3)*(x1*x2)*(x1*x3) / (((x1*x2)-(x1*x2)*(x1*x3))+10)
 	
 	try {
-		vector<Input*> inputs;
-		inputs.push_back(&x1);
-		inputs.push_back(&x2);
-		inputs.push_back(&x3);
+		vector<Input*> inputs = {&x1,&x2,&x3};
 		
 		Function func(inputs);
 		

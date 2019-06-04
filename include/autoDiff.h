@@ -58,6 +58,7 @@ class AddNodes: public Node {
 		virtual void updateParentDerivatives();
 	public:
 		AddNodes(Node& node1, Node& node2);
+		AddNodes(vector<Node*>& nodes);
 };
 
 //subtracts the second arg from the first
@@ -75,6 +76,7 @@ class MultiplyNodes: public Node {
 		virtual void updateParentDerivatives();
 	public:
 		MultiplyNodes(Node& node1, Node& node2);
+		MultiplyNodes(vector<Node*>& nodes);
 };
 
 class MultiplyByConstant: public Node {
@@ -104,7 +106,7 @@ class Function {
 		Node* outputNode;
 
 	public:
-		Function(vector<Input*> inputNodes_);
+		Function(vector<Input*>& inputNodes_);
 		double evaluate(vector<double> args);
 		vector<double> differentiate(vector<double> args);
 };

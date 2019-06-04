@@ -3,13 +3,13 @@
 
 using namespace std;
 
-Function::Function(vector<Input*> inputNodes_): inputNodes(inputNodes_), outputNode(nullptr) {
+Function::Function(vector<Input*>& inputNodes_): inputNodes(inputNodes_), outputNode(nullptr) {
 	int nInputs = inputNodes.size();
 	if(nInputs == 0) {
 		throw "No inputs to function";
 	}
 	
-	//check that we only have one terminal Node
+	//check that we have exactly one terminal Node
 	for(int i=0; i<nInputs; i++) {
 		vector<Node*> terminalOps = inputNodes[i]->findTerminalNodes();
 		int nTerminalOps = terminalOps.size();
