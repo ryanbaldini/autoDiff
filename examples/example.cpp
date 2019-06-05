@@ -19,20 +19,13 @@ int main() {
 	Input x3;
 		
 	//create downstream nodes via computations
-	MultiplyNodes mult1(x1, x2);
-	MultiplyNodes mult2(x1, x3);
-	MultiplyNodes mult3(mult1, mult2);
-	MultiplyNodes mult4(mult2, mult3);
-	SubtractNodes diff(mult1, mult3);
-	AddConstant sum(diff, 10.0);
-	DivideNodes div(mult4, sum);
-	MultiplyByConstant mult7(div, 2.0);	
-	vector<Node*> args = {&sum, &div, &mult7};
-	MultiplyNodes output(args);
-	
-	//this computational graph computes the following expression
-	// 2 * (x1*x3)*(x1*x2)*(x1*x3) / (((x1*x2)-(x1*x2)*(x1*x3))+10)
-	
+	Multiply mult(x1, x2);
+	Add sum(x2, x3);
+	NaturalLog ln(mult);
+	Exponentiate ex(sum);
+	Divide div(ln, ex);
+	CubeRoot out(div);
+		
 	try {
 		vector<Input*> inputs = {&x1,&x2,&x3};
 		

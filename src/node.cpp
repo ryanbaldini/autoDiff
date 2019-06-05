@@ -1,10 +1,31 @@
 #include "autoDiff.h"
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
 Node::Node(): value(0), derivative(0), evaluated(false), differentiatedParents(false) {
 }
+
+Node::Node(Node& parent): value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+	setParent(parent);
+}
+
+Node::Node(Node& parent1, Node& parent2): value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+	setParent(parent1);
+	setParent(parent2);
+}
+
+Node::Node(vector<Node*>& parents): value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+	int nParents = parents.size();
+	if(nParents <= 1) {
+		throw "MultiplyNodes called on less than 2 nodes. Need at least 2.";
+	}
+	for(int i=0; i<nParents; i++) {
+		setParent(*parents[i]);
+	}
+}
+
 
 double Node::getValue() {
 	return value;
@@ -129,127 +150,255 @@ void Input::updateParentDerivatives() {
 	return;
 }
 
-AddConstant::AddConstant(Node& node, double constant_): constant(constant_) {
-	setParent(node);
+Add::Add(Node& parent, double constant_): Node(parent), constant(constant_) {
 }
 
-void AddConstant::fillMyValue() {
-	value = (parents[0]->value) + constant;
+Add::Add(Node& parent1, Node& parent2): Node(parent1, parent2) {
 }
 
-void AddConstant::updateParentDerivatives() {
-	parents[0]->derivative += derivative;
+Add::Add(vector<Node*>& parents): Node(parents) {
 }
 
-AddNodes::AddNodes(Node& node1, Node& node2) {
-	setParent(node1);
-	setParent(node2);
-}
-
-AddNodes::AddNodes(vector<Node*>& nodes) {
-	int nNodes = nodes.size();
-	if(nNodes <= 1) {
-		throw "AddNodes called on less than 2 nodes. Need at least 2.";
-	}
-	for(int i=0; i<nNodes; i++) {
-		setParent(*nodes[i]);
-	}
-}
-
-void AddNodes::fillMyValue() {
+void Add::fillMyValue() {
 	int nParents = parents.size();
-	value = 0.0;
-	for(int i=0; i<nParents; i++) {
-		value += parents[i]->value;
+	if(nParents == 1) { //then add constant
+		value = (parents[0]->value) + constant;
+	} else { //then add parents
+		value = 0.0;
+		for(int i=0; i<nParents; i++) {
+			value += parents[i]->value;
+		}	
 	}
 }
 
-void AddNodes::updateParentDerivatives() {
+void Add::updateParentDerivatives() {
 	int nParents = parents.size();
 	for(int i=0; i<nParents; i++) {
 		parents[i]->derivative += derivative;
 	}
 }
 
-SubtractNodes::SubtractNodes(Node& node1, Node& node2) {
-	setParent(node1);
-	setParent(node2);
+Subtract::Subtract(Node& parent1, Node& parent2): Node(parent1, parent2) {
 }
 
-void SubtractNodes::fillMyValue() {
-	value = (parents[0]->value) - (parents[1]->value);
+Subtract::Subtract(Node& parent, double constant_): Node(parent), constant(constant_), parentFirst(true) {
 }
 
-void SubtractNodes::updateParentDerivatives() {
-	parents[0]->derivative += derivative;
-	parents[1]->derivative -= derivative;
+Subtract::Subtract(double constant_, Node& parent): Node(parent), constant(constant_), parentFirst(false) {
 }
 
-MultiplyNodes::MultiplyNodes(Node& node1, Node& node2) {
-	setParent(node1);
-	setParent(node2);
-}
-
-MultiplyNodes::MultiplyNodes(vector<Node*>& nodes) {
-	int nNodes = nodes.size();
-	if(nNodes <= 1) {
-		throw "MultiplyNodes called on less than 2 nodes. Need at least 2.";
-	}
-	for(int i=0; i<nNodes; i++) {
-		setParent(*nodes[i]);
-	}
-}
-
-void MultiplyNodes::fillMyValue() {
+void Subtract::fillMyValue() {
 	int nParents = parents.size();
-	value = 1.0;
-	for(int i=0; i<nParents; i++) {
-		value *= parents[i]->value;
-	}
-}
-
-void MultiplyNodes::updateParentDerivatives() {
-	int nParents = parents.size();
-	for(int i=0; i<nParents; i++) {
-		double prod = 1.0;
-		for(int j=0; j<nParents; j++) {
-			if(j != i) {
-				prod *= parents[j]->value;
-			}
+	if(nParents == 1) {
+		if(parentFirst) {
+			value = (parents[0]->value) - constant;
+		} else {
+			value = constant - parents[0]->value;
 		}
-		parents[i]->derivative += derivative * prod;
+	} else {
+		value = (parents[0]->value) - (parents[1]->value);
 	}
 }
 
-MultiplyByConstant::MultiplyByConstant(Node& node, double constant_): constant(constant_) {
-	setParent(node);
-}
-
-void MultiplyByConstant::fillMyValue() {
-	value = (parents[0]->value) * constant;
-}
-
-void MultiplyByConstant::updateParentDerivatives() {
-	parents[0]->derivative += derivative * constant;
-}
-
-DivideNodes::DivideNodes(Node& node1, Node& node2) {
-	setParent(node1);
-	setParent(node2);
-}
-
-void DivideNodes::fillMyValue() {
-	if(parents[1]->value == 0.0) {
-		throw "DivideNodes node attempted to divide by 0.0";
+void Subtract::updateParentDerivatives() {
+	int nParents = parents.size();
+	if(nParents == 1) {
+		if(parentFirst) {
+			parents[0]->derivative += derivative;
+		} else {
+			parents[0]->derivative -= derivative;
+		}
+	} else {
+		parents[0]->derivative += derivative;
+		parents[1]->derivative -= derivative;
 	}
-	value = (parents[0]->value) / (parents[1]->value);
 }
 
-void DivideNodes::updateParentDerivatives() {
-	if(parents[1]->value == 0.0) {
-		throw "DivideNodes node attempted to divide by 0.0";
+
+Multiply::Multiply(Node& parent, double constant_): Node(parent), constant(constant_) {
+}
+
+Multiply::Multiply(Node& parent1, Node& parent2): Node(parent1, parent2) {
+}
+
+Multiply::Multiply(vector<Node*>& parents): Node(parents) {
+}
+
+void Multiply::fillMyValue() {
+	int nParents = parents.size();
+	if(nParents == 1) {
+		value = parents[0]->value * constant;
+	} else {
+	 	value = 1.0;
+		for(int i=0; i<nParents; i++) {
+			value *= parents[i]->value;
+		}
 	}
-	parents[0]->derivative += derivative / (parents[1]->value);
-	double p1Squared = (parents[1]->value) * (parents[1]->value);
-	parents[1]->derivative -= derivative * (parents[0]->value) / p1Squared;
+}
+
+void Multiply::updateParentDerivatives() {
+	int nParents = parents.size();
+	if(nParents == 1) {
+		parents[0]->derivative += derivative * constant;
+	} else {
+		for(int i=0; i<nParents; i++) {
+			double prod = 1.0;
+			for(int j=0; j<nParents; j++) {
+				if(j != i) {
+					prod *= parents[j]->value;
+				}
+			}
+			parents[i]->derivative += derivative * prod;
+		}
+	}
+}
+
+
+Divide::Divide(Node& parent1, Node& parent2): Node(parent1, parent2) {
+}
+
+Divide::Divide(Node& parent, double constant_): Node(parent), constant(constant_), parentFirst(true) {
+	if(constant_ == 0) {
+		throw "Tried to construct Divide node with constant denominator of 0";
+	}
+}
+
+Divide::Divide(double constant_, Node& parent): Node(parent), constant(constant_), parentFirst(false) {
+}
+
+void Divide::fillMyValue() {
+	int nParents = parents.size();
+	if(nParents == 1) {
+		if(parentFirst) {
+			value = (parents[0]->value) / constant; //already checked 0 on construction
+		} else {
+			if(parents[0]->value == 0.0) {
+				throw "Divide node attempted to divide by 0.0";
+			}
+			value = constant / (parents[0]->value);
+		}
+	} else {
+		if(parents[1]->value == 0.0) {
+			throw "Divide node attempted to divide by 0.0";
+		}
+		value = (parents[0]->value) / (parents[1]->value);
+	}
+}
+
+
+void Divide::updateParentDerivatives() {
+	int nParents = parents.size();
+	if(nParents == 1) {
+		Node* parent = parents[0];
+		if(parentFirst) {
+			parent->derivative += derivative / constant;
+		} else {
+			if(parent->value == 0.0) {
+				throw "Divide node attempted to divide by 0.0 in gradient calculation";
+			}
+			double pSquared = (parent->value) * (parent->value);
+			parent->derivative -= derivative * constant / pSquared;
+		}
+	} else {
+		if(parents[1]->value == 0.0) {
+			throw "DivideNodes node attempted to divide by 0.0 in gradient calculation";
+		}
+		parents[0]->derivative += derivative / (parents[1]->value);
+		double p1Squared = (parents[1]->value) * (parents[1]->value);
+		parents[1]->derivative -= derivative * (parents[0]->value) / p1Squared;
+	}
+}
+
+NaturalLog::NaturalLog(Node& parent): Node(parent) {
+}
+
+void NaturalLog::fillMyValue() {
+	Node* parent = parents[0];
+	if(parent->value <= 0) {
+		throw "NaturalLog node tried to take log of non-positive number";
+	}
+	value = log(parent->value);
+}
+
+void NaturalLog::updateParentDerivatives() {
+	Node* parent = parents[0];
+	if(parent->value == 0) {
+		throw "NaturalLog node tried to divide by 0.0 in gradient calculation";
+	}
+	parent->derivative += derivative / parent->value;
+}
+
+Exponentiate::Exponentiate(Node& parent): Node(parent) {
+}
+
+void Exponentiate::fillMyValue() {
+	value = exp(parents[0]->value);
+}
+
+void Exponentiate::updateParentDerivatives() {
+	parents[0]->derivative += derivative * exp(parents[0]->value);
+}
+
+Square::Square(Node& parent): Node(parent) {
+}
+
+void Square::fillMyValue() {
+	double parentValue = parents[0]->value;
+	value = parentValue * parentValue;
+}
+
+void Square::updateParentDerivatives() {
+	parents[0]->derivative += derivative * 2*parents[0]->value;
+}
+
+SquareRoot::SquareRoot(Node& parent): Node(parent) {
+}
+
+void SquareRoot::fillMyValue() {
+	double parentValue = parents[0]->value;
+	if(parentValue < 0) {
+		throw "SquareRoot tried to take square root of negative number";
+	}
+	value = sqrt(parentValue);
+}
+
+void SquareRoot::updateParentDerivatives() {
+	parents[0]->derivative += derivative * 0.5 * pow(parents[0]->value, -0.5);
+}
+
+Cube::Cube(Node& parent): Node(parent) {
+}
+
+void Cube::fillMyValue() {
+	double parentValue = parents[0]->value;
+	value = parentValue * parentValue * parentValue;
+}
+
+void Cube::updateParentDerivatives() {
+	double parentValue = parents[0]->value;
+	parents[0]->derivative += derivative * 3 * parentValue * parentValue;
+}
+
+CubeRoot::CubeRoot(Node& parent): Node(parent) {
+}
+
+void CubeRoot::fillMyValue() {
+	double parentValue = parents[0]->value;
+	value = pow(parentValue, 1.0/3.0);
+}
+
+void CubeRoot::updateParentDerivatives() {
+	parents[0]->derivative += derivative * 1.0/3.0 * pow(parents[0]->value, -2.0/3.0);
+}
+
+RaiseToPower::RaiseToPower(Node& parent, double exponent_): Node(parent), exponent(exponent_) {
+}
+
+void RaiseToPower::fillMyValue() {
+	double parentValue = parents[0]->value;
+	value = pow(parentValue, exponent);
+}
+
+void RaiseToPower::updateParentDerivatives() {
+	parents[0]->derivative += derivative * exponent * pow(parents[0]->value, exponent-1);
 }

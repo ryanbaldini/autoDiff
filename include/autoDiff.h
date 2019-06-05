@@ -21,19 +21,27 @@ class Node {
 		vector<Node*> getDescendantNodes();
 		vector<Node*> findTerminalNodes();
 		void setParent(Node& node);
-	
-	public:
 		Node();
+		Node(Node& parent);
+		Node(Node& parent1, Node& parent2);
+		Node(vector<Node*>& parents);
+		
+	public:
 		double getValue();
 		double getDerivative();
 		
 		friend class Input;
-		friend class AddConstant;
-		friend class AddNodes;
-		friend class SubtractNodes;
-		friend class MultiplyNodes;
-		friend class MultiplyByConstant;
-		friend class DivideNodes;
+		friend class Add;
+		friend class Subtract;
+		friend class Multiply;
+		friend class Divide;
+		friend class NaturalLog;
+		friend class Exponentiate;
+		friend class Square;
+		friend class SquareRoot;
+		friend class Cube;
+		friend class CubeRoot;
+		friend class RaiseToPower;
 		friend class Function;
 };
 
@@ -43,59 +51,111 @@ class Input: public Node {
 		virtual void updateParentDerivatives();
 };
 
-class AddConstant: public Node {
+class Add: public Node {
 	private:
 		double constant;
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 	public:
-		AddConstant(Node& node, double constant_);
-};
-
-class AddNodes: public Node {
-	private:
-		virtual void fillMyValue();
-		virtual void updateParentDerivatives();
-	public:
-		AddNodes(Node& node1, Node& node2);
-		AddNodes(vector<Node*>& nodes);
+		Add(Node& parent, double constant_);
+		Add(Node& parent1, Node& parent2);
+		Add(vector<Node*>& parents);
 };
 
 //subtracts the second arg from the first
-class SubtractNodes: public Node {
+class Subtract: public Node {
 	private:
+		double constant;
+		bool parentFirst;
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 	public:
-		SubtractNodes(Node& node1, Node& node2);
+		Subtract(Node& parent1, Node& parent2);
+		Subtract(double constant_, Node& parent);
+		Subtract(Node& parent, double constant_);
 };
 
-class MultiplyNodes: public Node {
-	private:
-		virtual void fillMyValue();
-		virtual void updateParentDerivatives();
-	public:
-		MultiplyNodes(Node& node1, Node& node2);
-		MultiplyNodes(vector<Node*>& nodes);
-};
-
-class MultiplyByConstant: public Node {
+class Multiply: public Node {
 	private:
 		double constant;
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 	public:
-		MultiplyByConstant(Node& node, double constant_);
+		Multiply(Node& parent, double constant_);
+		Multiply(Node& parent1, Node& parent2);
+		Multiply(vector<Node*>& parents);
 };
 
 //divides the second arg by the first
-class DivideNodes: public Node {
+class Divide: public Node {
 	private:
+		double constant;
+		bool parentFirst;
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 	public:
-		DivideNodes(Node& node1, Node& node2);
+		Divide(Node& parent1, Node& parent2);
+		Divide(double constant_, Node& parent);
+		Divide(Node& parent, double constant_);
 };
+
+class NaturalLog: public Node {
+	private: 
+		virtual void fillMyValue();
+		virtual void updateParentDerivatives();
+	public:
+		NaturalLog(Node& parent);
+		
+};
+
+class Exponentiate: public Node {
+	private: 
+		virtual void fillMyValue();
+		virtual void updateParentDerivatives();
+	public:
+		Exponentiate(Node& parent);
+};
+
+class Square: public Node {
+	private: 
+		virtual void fillMyValue();
+		virtual void updateParentDerivatives();
+	public:
+		Square(Node& parent);
+};
+
+class SquareRoot: public Node {
+	private: 
+		virtual void fillMyValue();
+		virtual void updateParentDerivatives();
+	public:
+		SquareRoot(Node& parent);
+};
+
+class Cube: public Node {
+	private: 
+		virtual void fillMyValue();
+		virtual void updateParentDerivatives();
+	public:
+		Cube(Node& parent);
+}; 
+
+class CubeRoot: public Node {
+	private: 
+		virtual void fillMyValue();
+		virtual void updateParentDerivatives();
+	public:
+		CubeRoot(Node& parent);
+}; 
+
+class RaiseToPower: public Node {
+	private: 
+		double exponent;
+		virtual void fillMyValue();
+		virtual void updateParentDerivatives();
+	public:
+		RaiseToPower(Node& parent, double exponent_);
+}; 
 
 //constructor requires that the function's graph is completely built when constructed
 //alternatively, could allow use to build function further, and then "compile" it (which checks for errors, etc)
