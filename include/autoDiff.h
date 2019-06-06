@@ -43,6 +43,8 @@ class Node {
 		friend class CubeRoot;
 		friend class RaiseToPower;
 		friend class Function;
+		friend class Sine;
+		friend class Cosine;
 };
 
 class Input: public Node {
@@ -148,13 +150,33 @@ class CubeRoot: public Node {
 		CubeRoot(Node& parent);
 }; 
 
+//raises first input to power of second
 class RaiseToPower: public Node {
 	private: 
-		double exponent;
+		bool parentIsBase;	//else parent is exponent
+		double constant;
 		virtual void fillMyValue();
 		virtual void updateParentDerivatives();
 	public:
-		RaiseToPower(Node& parent, double exponent_);
+		RaiseToPower(double base, Node& parent);
+		RaiseToPower(Node& parent, double exponent);
+		RaiseToPower(Node& parent1, Node& parent2);
+}; 
+
+class Sine: public Node {
+	private: 
+		virtual void fillMyValue();
+		virtual void updateParentDerivatives();
+	public:
+		Sine(Node& parent);
+}; 
+
+class Cosine: public Node {
+	private: 
+		virtual void fillMyValue();
+		virtual void updateParentDerivatives();
+	public:
+		Cosine(Node& parent);
 }; 
 
 //constructor requires that the function's graph is completely built when constructed

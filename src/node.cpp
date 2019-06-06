@@ -379,6 +379,7 @@ void Cube::updateParentDerivatives() {
 	parents[0]->derivative += derivative * 3 * parentValue * parentValue;
 }
 
+
 CubeRoot::CubeRoot(Node& parent): Node(parent) {
 }
 
@@ -391,14 +392,70 @@ void CubeRoot::updateParentDerivatives() {
 	parents[0]->derivative += derivative * 1.0/3.0 * pow(parents[0]->value, -2.0/3.0);
 }
 
-RaiseToPower::RaiseToPower(Node& parent, double exponent_): Node(parent), exponent(exponent_) {
+
+RaiseToPower::RaiseToPower(double base, Node& parent): Node(parent), constant(base), parentIsBase(false) {
+	if(base <= 0) {
+		throw "Can't make constant base <=0 in RaiseToPower node: computing derivative involves logging the base";
+	}
+}
+
+RaiseToPower::RaiseToPower(Node& parent, double exponent): Node(parent), constant(exponent), parentIsBase(true) {
+}
+
+RaiseToPower::RaiseToPower(Node& parent1, Node& parent2): Node(parent1, parent2) {
 }
 
 void RaiseToPower::fillMyValue() {
-	double parentValue = parents[0]->value;
-	value = pow(parentValue, exponent);
+	int nParents = parents.size();
+	if(nParents == 1) {
+		if(parentIsBase) {
+			value = pow(parents[0]->value, constant);
+		} else {
+			value = pow(constant, parents[0]->value);
+		}
+	} else {
+		value = pow(parents[0]->value, parents[1]->value);
+	}
 }
 
 void RaiseToPower::updateParentDerivatives() {
-	parents[0]->derivative += derivative * exponent * pow(parents[0]->value, exponent-1);
+	int nParents = parents.size();
+	if(nParents == 1) {
+		if(parentIsBase) {
+			parents[0]->derivative += derivative * constant * pow(parents[0]->value, constant-1);
+		} else {
+			//<= 0 already checked for base
+			parents[0]->derivative += derivative * log(constant) * pow(constant, parents[0]->value);
+		}
+	} else {
+		if(parents[0]->value <= 0) {
+			throw "Failed differentiatio of RaiseToPower: can't take log of non-positive number";
+		}
+		parents[0]->derivative += derivative * parents[1]->value * pow(parents[0]->value, parents[1]->value-1);
+		parents[1]->derivative += derivative * log(parents[0]->value) * pow(parents[0]->value, parents[1]->value);
+	}
+}
+
+
+Sine::Sine(Node& parent): Node(parent) {
+}
+
+void Sine::fillMyValue() {
+	value = sin(parents[0]->value);
+}
+
+void Sine::updateParentDerivatives() {
+	parents[0]->derivative += derivative * cos(parents[0]->value);
+}
+
+
+Cosine::Cosine(Node& parent): Node(parent) {
+}
+
+void Cosine::fillMyValue() {
+	value = cos(parents[0]->value);
+}
+
+void Cosine::updateParentDerivatives() {
+	parents[0]->derivative += derivative * -sin(parents[0]->value);
 }

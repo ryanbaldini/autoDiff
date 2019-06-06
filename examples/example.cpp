@@ -23,9 +23,9 @@ int main() {
 	Add sum(x2, x3);
 	NaturalLog ln(mult);
 	Exponentiate ex(sum);
-	Divide div(ln, ex);
-	CubeRoot out(div);
-		
+	RaiseToPower po(ex, ln);
+	Sine out(po);
+			
 	try {
 		vector<Input*> inputs = {&x1,&x2,&x3};
 		
@@ -34,7 +34,7 @@ int main() {
 		//evaluate at x1=1, x2=2, x3=3
 		double output = func.evaluate(vector<double>{1,2,3});
 		cout << "output: " << output << "\n";
-		
+				
 		//differentiate with respect to (x1,x2,x3) at x1=1, x2=2, x3=3
 		vector<double> gradient = func.differentiate(vector<double>{1,2,3});
 		cout << "gradient: ";
