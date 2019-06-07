@@ -393,13 +393,13 @@ void CubeRoot::updateParentDerivatives() {
 }
 
 
-RaiseToPower::RaiseToPower(double base, Node& parent): Node(parent), constant(base), parentIsBase(false) {
+RaiseToPower::RaiseToPower(double base, Node& parent): Node(parent), parentIsBase(false), constant(base) {
 	if(base <= 0) {
 		throw "Can't make constant base <=0 in RaiseToPower node: computing derivative involves logging the base";
 	}
 }
 
-RaiseToPower::RaiseToPower(Node& parent, double exponent): Node(parent), constant(exponent), parentIsBase(true) {
+RaiseToPower::RaiseToPower(Node& parent, double exponent): Node(parent), parentIsBase(true), constant(exponent) {
 }
 
 RaiseToPower::RaiseToPower(Node& parent1, Node& parent2): Node(parent1, parent2) {
