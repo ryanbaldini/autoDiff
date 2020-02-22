@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cmath>
 
 namespace ad {
 	struct Operation {
@@ -128,5 +129,23 @@ namespace ad {
 	
 		Divide(): constant(0.0), useConstant(false), constantFirst(false) {}
 		Divide(double constant_, bool constantFirst_): constant(constant_), useConstant(true), constantFirst(constantFirst_) {}
+	};
+	
+	struct NaturalLog: Operation {
+		virtual double evaluate(std::vector<double>& x) {
+			if(x.size() != 1) {
+				throw "Input to NaturalLog Operation must have exactly one argument";
+			}
+			if(x[0] <= 0) {
+				throw "NaturalLog operation tried to take log of non-positive number";
+			}
+			return log(x[0]);	
+		}
+		virtual std::vector<double> differentiate(std::vector<double>& x) {
+			if(x.size() != 1) {
+				throw "Input to NaturalLog Operation must have exactly one argument";
+			}
+			return std::vector<double>{1.0/x[0]};
+		}
 	};
 }

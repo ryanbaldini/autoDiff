@@ -1,7 +1,6 @@
 #pragma once
 
 #include <algorithm>
-#include <cmath>
 
 namespace ad {
 	struct Node {
@@ -315,82 +314,13 @@ namespace ad {
 	Node& operator/(double x, Node& parent) {
 		return divide(x, parent);
 	};
+	
+	Node& ln(Node& parent) {
+		Operation* op = new NaturalLog;
+		Node* node = new Node(parent, op);
+		return *node;
+	}
 
-	//
-	// Divide::Divide(Node& parent1, Node& parent2): Node(parent1, parent2) {
-	// }
-	//
-	// Divide::Divide(Node& parent, double constant_): Node(parent), constant(constant_), parentFirst(true) {
-	// 	if(constant_ == 0) {
-	// 		throw "Tried to construct Divide node with constant denominator of 0";
-	// 	}
-	// }
-	//
-	// Divide::Divide(double constant_, Node& parent): Node(parent), constant(constant_), parentFirst(false) {
-	// }
-	//
-	// void Divide::fillMyValue() {
-	// 	int nParents = parents.size();
-	// 	if(nParents == 1) {
-	// 		if(parentFirst) {
-	// 			value = (parents[0]->value) / constant; //already checked 0 on construction
-	// 		} else {
-	// 			if(parents[0]->value == 0.0) {
-	// 				throw "Divide node attempted to divide by 0.0";
-	// 			}
-	// 			value = constant / (parents[0]->value);
-	// 		}
-	// 	} else {
-	// 		if(parents[1]->value == 0.0) {
-	// 			throw "Divide node attempted to divide by 0.0";
-	// 		}
-	// 		value = (parents[0]->value) / (parents[1]->value);
-	// 	}
-	// }
-	//
-	//
-	// void Divide::updateParentDerivatives() {
-	// 	int nParents = parents.size();
-	// 	if(nParents == 1) {
-	// 		Node* parent = parents[0];
-	// 		if(parentFirst) {
-	// 			parent->derivative += derivative / constant;
-	// 		} else {
-	// 			if(parent->value == 0.0) {
-	// 				throw "Divide node attempted to divide by 0.0 in gradient calculation";
-	// 			}
-	// 			double pSquared = (parent->value) * (parent->value);
-	// 			parent->derivative -= derivative * constant / pSquared;
-	// 		}
-	// 	} else {
-	// 		if(parents[1]->value == 0.0) {
-	// 			throw "DivideNodes node attempted to divide by 0.0 in gradient calculation";
-	// 		}
-	// 		parents[0]->derivative += derivative / (parents[1]->value);
-	// 		double p1Squared = (parents[1]->value) * (parents[1]->value);
-	// 		parents[1]->derivative -= derivative * (parents[0]->value) / p1Squared;
-	// 	}
-	// }
-	//
-	// NaturalLog::NaturalLog(Node& parent): Node(parent) {
-	// }
-	//
-	// void NaturalLog::fillMyValue() {
-	// 	Node* parent = parents[0];
-	// 	if(parent->value <= 0) {
-	// 		throw "NaturalLog node tried to take log of non-positive number";
-	// 	}
-	// 	value = log(parent->value);
-	// }
-	//
-	// void NaturalLog::updateParentDerivatives() {
-	// 	Node* parent = parents[0];
-	// 	if(parent->value == 0) {
-	// 		throw "NaturalLog node tried to divide by 0.0 in gradient calculation";
-	// 	}
-	// 	parent->derivative += derivative / parent->value;
-	// }
-	//
 	// Exponentiate::Exponentiate(Node& parent): Node(parent) {
 	// }
 	//
