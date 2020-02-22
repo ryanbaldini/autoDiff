@@ -1,31 +1,47 @@
 #include "autoDiff.h"
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 using namespace std;
 
 Node::Node(): operation(nullptr), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
 }
 
+//this is the copy constructor. it will create a new node that simply inherits the value of the previous node.
 Node::Node(Node& parent): operation(new Inherit), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+	cout << "Calling this" << "\n";
 	setParent(parent);
 }
+
+Node::Node(Node& parent, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+	setParent(parent);
+}
+
 
 Node::Node(Node& parent1, Node& parent2): operation(nullptr), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
 	setParent(parent1);
 	setParent(parent2);
 }
 
+Node::Node(Node& parent1, Node& parent2, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+	setParent(parent1);
+	setParent(parent2);
+}
+
 Node::Node(vector<Node*>& parents): operation(nullptr), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
 	int nParents = parents.size();
-	if(nParents <= 1) {
-		throw "MultiplyNodes called on less than 2 nodes. Need at least 2.";
-	}
 	for(int i=0; i<nParents; i++) {
 		setParent(*parents[i]);
 	}
 }
 
+Node::Node(vector<Node*>& parents, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+	int nParents = parents.size();
+	for(int i=0; i<nParents; i++) {
+		setParent(*parents[i]);
+	}
+}
 
 double Node::getValue() {
 	return value;
@@ -158,21 +174,74 @@ void Node::setParent(Node& node) {
 	node.children.push_back(this);
 }
 
-// Node operator+(Node& parent1, Node& parent2) {
-// 	Node node(parent1, parent2);
-// 	node.operation = new Add(0.0);
-// 	return node;
-// };
-
 Node& add(Node& parent1, Node& parent2) {
-	Node* node = new Node(parent1, parent2);
-	node->operation = new Add(0.0);
+	Operation* addOp = new Add(0.0);
+	Node* node = new Node(parent1, parent2, addOp);
 	return *node;
+}
+
+Node& add(Node& parent, double x) {
+	Operation* addOp = new Add(x);
+	Node* node = new Node(parent, addOp);
+	return *node;
+}
+
+Node& add(double x, Node& parent) {
+	return add(parent, x);
 }
 
 Node& operator+(Node& parent1, Node& parent2) {
 	return add(parent1, parent2);
 };
+
+Node& operator+(Node& parent, double x) {
+	return add(parent, x);
+};
+
+Node& operator+(double x, Node& parent) {
+	return add(parent, x);
+};
+
+Node& subtract(Node& parent1, Node& parent2) {
+	Operation* subOp = new Subtract();
+	Node* node = new Node(parent1, parent2, subOp);
+	return *node;
+}
+
+Node& subtract(Node& parent, double x) {
+	Operation* subOp = new Subtract(x, false);
+	Node* node = new Node(parent, subOp);
+	return *node;
+}
+
+Node& subtract(double x, Node& parent) {
+	Operation* subOp = new Subtract(x, true);
+	Node* node = new Node(parent, subOp);
+	return *node;
+}
+
+Node& operator-(Node& parent1, Node& parent2) {
+	return subtract(parent1, parent2);
+};
+
+Node& operator-(Node& parent, double x) {
+	return subtract(parent, x);
+};
+
+Node& operator-(double x, Node& parent) {
+	return subtract(x, parent);
+};
+
+
+// Node& subtract(Node& parent1, Node& parent2) {
+// 	Node* node = new Node(parent1, parent2);
+// 	node->operation = new Subtract;
+// 	return *node;
+// }
+//
+// Node& operator-(Node& parent1, Node& parent2) {
+// 	return subtract(parent1, parent2);
+// };
 
 // void Input::fillMyValue() {
 // 	return;

@@ -16,11 +16,11 @@ int main() {
 	//create input nodes
 	Node x1;
 	Node x2;
-	// Node x3;
+	Node x3;
 	
 	//create downstream nodes via computations
 	
-	Node output = x1 + x1 + x2 + x2 + x2;
+	Node output = x1 + x1 + x2 + x2 + x2 - (x1 + x3 + 4) - 10;
 	cout << "got here\n";
 	cout << x1.children[0] << "\n";
 	cout << x2.children[0] << "\n";
@@ -40,19 +40,22 @@ int main() {
 	// Sine out(po);
 			
 	try {
-		vector<Node*> inputs = {&x1,&x2};
+		vector<Node*> inputs = {&x1,&x2,&x3};
 		Function func(inputs);
 
 		cout << "func node count: " << func.nodeCount() << "\n";
 
-		double output = func.evaluate(vector<double>{5,2});
+		double output = func.evaluate(vector<double>{5,2,1});
 		cout << "output: " << output << "\n";
-		output = func.evaluate(vector<double>{9,13});
+		output = func.evaluate(vector<double>{9,13,10});
 		cout << "output: " << output << "\n";
-		output = func.evaluate(vector<double>{0,1});
+		output = func.evaluate(vector<double>{0,1,2});
 		cout << "output: " << output << "\n";
 
-		vector<double> gradient = func.differentiate(vector<double>{5,2});
+		vector<double> gradient = func.differentiate(vector<double>{5,2,9});
+		cout << "gradient: ";
+		printVector(gradient);
+		gradient = func.differentiate(vector<double>{0,0,0});
 		cout << "gradient: ";
 		printVector(gradient);
 	}

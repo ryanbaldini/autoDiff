@@ -26,9 +26,12 @@ struct Node {
 	vector<Node*> findTerminalNodes();
 	void setParent(Node& node);
 	Node();
-	Node(Node& parent);
+	Node(Node& parent); //copy constructor
+	Node(Node& parent, Operation* operation);
 	Node(Node& parent1, Node& parent2);
+	Node(Node& parent1, Node& parent2, Operation* operation);
 	Node(vector<Node*>& parents);
+	Node(vector<Node*>& parents, Operation* operation);
 	
 	double getValue();
 	double getDerivative();
@@ -62,22 +65,55 @@ struct Add: Operation {
 
 	Add(double constant_): constant(constant_){};
 };
-
 Node& add(Node& parent1, Node& parent2);
+Node& add(Node& parent, double x);
+Node& add(double x, Node& parent);
 Node& operator+(Node& parent1, Node& parent2);
+Node& operator+(Node& parent, double x);
+Node& operator+(double x, Node& parent);
 
+struct Subtract: Operation {
+	double constant;
+	bool useConstant;
+	bool constantFirst;
+	virtual double evaluate(vector<double>& x) {
+		if(useConstant){
+			if(x.size() != 1) {
+				throw "Input to Subtract Operation must have exactly one argument when using constant";
+			}
+			if(constantFirst) {
+				return constant - x[0];
+			}
+			return x[0] - constant;
+		}
+		if(x.size() != 2) {
+			throw "Input to Subtract Operation must have exactly two arguments";
+		}
+		return x[0] - x[1];		
+	}
+	virtual vector<double> differentiate(vector<double>& x) {
+		if(useConstant){ 
+			if(constantFirst){
+				return vector<double>{-1.0};
+			}
+			return vector<double>{1.0};
+		}
+		return vector<double>{1.0,-1.0};
+	}
+	
+	Subtract(): constant(0.0), useConstant(false), constantFirst(false) {}
+	Subtract(double constant_, bool constantFirst_): constant(constant_), useConstant(true), constantFirst(constantFirst_) {}
+};
+Node& subtract(Node& parent1, Node& parent2);
+Node& subtract(Node& parent, double x);
+Node& subtract(double x, Node& parent);
+Node& operator-(Node& parent1, Node& parent2);
+Node& operator-(Node& parent, double x);
+Node& operator-(double x, Node& parent);
 
-// struct Subtract: Operation {
-// 	virtual double evaluate(vector<double>& x) {
-// 		if(x.size() != 2) {
-// 			throw "Input to Subtract Operation must have exactly two arguments";
-// 		}
-// 		return x[0] - x[1];
-// 	}
-// 	virtual vector<double> differentiate(vector<double>& x) {
-// 		return vector<double>{1.0,-1.0};
-// 	}
-// };
+// Node& subtract(Node& parent1, Node& parent2);
+// Node& operator-(Node& parent1, Node& parent2);
+
 //
 // struct SubtractConst: Operation {
 // 	double constant;
@@ -109,8 +145,6 @@ Node& operator+(Node& parent1, Node& parent2);
 // 	SubtractFromConst(double constant_): constant(constant_){};
 // };
 
-
-// Node operator+(Node& parent1, Node& parent2);
 
 // class Input: public Node {
 // 	private:
