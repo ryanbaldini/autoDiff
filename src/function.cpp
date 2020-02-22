@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Function::Function(vector<Input*>& inputNodes_): inputNodes(inputNodes_), outputNode(nullptr) {
+Function::Function(vector<Node*>& inputNodes_): inputNodes(inputNodes_), outputNode(nullptr) {
 	int nInputs = inputNodes.size();
 	if(nInputs == 0) {
 		throw "No inputs to function";
