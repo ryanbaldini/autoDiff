@@ -12,19 +12,18 @@ void printVector(vector<double>& vec) {
 }
 
 int main() {
-	
 	//create input nodes
-	Node x1;
-	Node x2;
-	Node x3;
+	ad::Node x1;
+	ad::Node x2;
+	ad::Node x3;
 	
 	//create downstream nodes via computations
-	Node n1 = (4 + 2*x1 + 3*x2 - 5*x3)*2;
-	Node output = n1 * n1 * n1;
+	ad::Node n1 = (4 + 2*x1 + 3*x2 - 5*x3)*2;
+	ad::Node output = n1 * n1 * n1;
 			
 	try {
-		vector<Node*> inputs = {&x1,&x2,&x3};
-		Function func(inputs);
+		vector<ad::Node*> inputs = {&x1,&x2,&x3};
+		ad::Function func(inputs);
 
 		cout << "func node count: " << func.nodeCount() << "\n";
 
