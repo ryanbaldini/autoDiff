@@ -23,6 +23,11 @@ namespace ad {
 		if(nInputs == 0) {
 			throw "No inputs to function";
 		}
+		for(int i=0; i<nInputs; i++) {
+			if(inputNodes[i]->operation != nullptr) {
+				throw "Input nodes to a function must not have an operation (i.e., require operation = nullptr)";
+			}
+		} 
 	
 		//check that we have exactly one terminal Node
 		for(int i=0; i<nInputs; i++) {
