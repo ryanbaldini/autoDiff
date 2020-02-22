@@ -10,7 +10,6 @@ Node::Node(): operation(nullptr), value(0), derivative(0), evaluated(false), dif
 
 //this is the copy constructor. it will create a new node that simply inherits the value of the previous node.
 Node::Node(Node& parent): operation(new Inherit), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
-	cout << "Calling this" << "\n";
 	setParent(parent);
 }
 
@@ -232,129 +231,35 @@ Node& operator-(double x, Node& parent) {
 	return subtract(x, parent);
 };
 
+Node& multiply(Node& parent1, Node& parent2) {
+	Operation* multOp = new Multiply(1.0);
+	Node* node = new Node(parent1, parent2, multOp);
+	return *node;
+}
 
-// Node& subtract(Node& parent1, Node& parent2) {
-// 	Node* node = new Node(parent1, parent2);
-// 	node->operation = new Subtract;
-// 	return *node;
-// }
-//
-// Node& operator-(Node& parent1, Node& parent2) {
-// 	return subtract(parent1, parent2);
-// };
+Node& multiply(Node& parent, double x) {
+	Operation* multOp = new Multiply(x);
+	Node* node = new Node(parent, multOp);
+	return *node;
+}
 
-// void Input::fillMyValue() {
-// 	return;
-// }
-//
-// void Input::updateParentDerivatives() {
-// 	return;
-// }
+Node& multiply(double x, Node& parent) {
+	return multiply(parent, x);
+}
 
-// Add::Add(Node& parent, double constant_): Node(parent), constant(constant_) {
-// }
-//
-// Add::Add(Node& parent1, Node& parent2): Node(parent1, parent2) {
-// }
-//
-// Add::Add(vector<Node*>& parents): Node(parents) {
-// }
-//
-// void Add::fillMyValue() {
-// 	int nParents = parents.size();
-// 	if(nParents == 1) { //then add constant
-// 		value = (parents[0]->value) + constant;
-// 	} else { //then add parents
-// 		value = 0.0;
-// 		for(int i=0; i<nParents; i++) {
-// 			value += parents[i]->value;
-// 		}
-// 	}
-// }
-//
-// void Add::updateParentDerivatives() {
-// 	int nParents = parents.size();
-// 	for(int i=0; i<nParents; i++) {
-// 		parents[i]->derivative += derivative;
-// 	}
-// }
-//
-//
-// Subtract::Subtract(Node& parent1, Node& parent2): Node(parent1, parent2) {
-// }
-//
-// Subtract::Subtract(Node& parent, double constant_): Node(parent), constant(constant_), parentFirst(true) {
-// }
-//
-// Subtract::Subtract(double constant_, Node& parent): Node(parent), constant(constant_), parentFirst(false) {
-// }
-//
-// void Subtract::fillMyValue() {
-// 	int nParents = parents.size();
-// 	if(nParents == 1) {
-// 		if(parentFirst) {
-// 			value = (parents[0]->value) - constant;
-// 		} else {
-// 			value = constant - parents[0]->value;
-// 		}
-// 	} else {
-// 		value = (parents[0]->value) - (parents[1]->value);
-// 	}
-// }
-//
-// void Subtract::updateParentDerivatives() {
-// 	int nParents = parents.size();
-// 	if(nParents == 1) {
-// 		if(parentFirst) {
-// 			parents[0]->derivative += derivative;
-// 		} else {
-// 			parents[0]->derivative -= derivative;
-// 		}
-// 	} else {
-// 		parents[0]->derivative += derivative;
-// 		parents[1]->derivative -= derivative;
-// 	}
-// }
-//
-//
-// Multiply::Multiply(Node& parent, double constant_): Node(parent), constant(constant_) {
-// }
-//
-// Multiply::Multiply(Node& parent1, Node& parent2): Node(parent1, parent2) {
-// }
-//
-// Multiply::Multiply(vector<Node*>& parents): Node(parents) {
-// }
-//
-// void Multiply::fillMyValue() {
-// 	int nParents = parents.size();
-// 	if(nParents == 1) {
-// 		value = parents[0]->value * constant;
-// 	} else {
-// 	 	value = 1.0;
-// 		for(int i=0; i<nParents; i++) {
-// 			value *= parents[i]->value;
-// 		}
-// 	}
-// }
-//
-// void Multiply::updateParentDerivatives() {
-// 	int nParents = parents.size();
-// 	if(nParents == 1) {
-// 		parents[0]->derivative += derivative * constant;
-// 	} else {
-// 		for(int i=0; i<nParents; i++) {
-// 			double prod = 1.0;
-// 			for(int j=0; j<nParents; j++) {
-// 				if(j != i) {
-// 					prod *= parents[j]->value;
-// 				}
-// 			}
-// 			parents[i]->derivative += derivative * prod;
-// 		}
-// 	}
-// }
-//
+Node& operator*(Node& parent1, Node& parent2) {
+	return multiply(parent1, parent2);
+};
+
+Node& operator*(Node& parent, double x) {
+	return multiply(parent, x);
+};
+
+Node& operator*(double x, Node& parent) {
+	return multiply(parent, x);
+};
+
+
 //
 // Divide::Divide(Node& parent1, Node& parent2): Node(parent1, parent2) {
 // }
