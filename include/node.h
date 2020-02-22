@@ -103,7 +103,6 @@ namespace ad {
 	}
 
 	void Node::differentiate() {
-	
 		if(differentiatedParents) {
 			return;
 		}
@@ -202,14 +201,14 @@ namespace ad {
 	}
 
 	Node& add(Node& parent1, Node& parent2) {
-		Operation* addOp = new Add(0.0);
-		Node* node = new Node(parent1, parent2, addOp);
+		Operation* op = new Add(0.0);
+		Node* node = new Node(parent1, parent2, op);
 		return *node;
 	}
 
 	Node& add(Node& parent, double x) {
-		Operation* addOp = new Add(x);
-		Node* node = new Node(parent, addOp);
+		Operation* op = new Add(x);
+		Node* node = new Node(parent, op);
 		return *node;
 	}
 
@@ -230,20 +229,20 @@ namespace ad {
 	};
 
 	Node& subtract(Node& parent1, Node& parent2) {
-		Operation* subOp = new Subtract();
-		Node* node = new Node(parent1, parent2, subOp);
+		Operation* op = new Subtract();
+		Node* node = new Node(parent1, parent2, op);
 		return *node;
 	}
 
 	Node& subtract(Node& parent, double x) {
-		Operation* subOp = new Subtract(x, false);
-		Node* node = new Node(parent, subOp);
+		Operation* op = new Subtract(x, false);
+		Node* node = new Node(parent, op);
 		return *node;
 	}
 
 	Node& subtract(double x, Node& parent) {
-		Operation* subOp = new Subtract(x, true);
-		Node* node = new Node(parent, subOp);
+		Operation* op = new Subtract(x, true);
+		Node* node = new Node(parent, op);
 		return *node;
 	}
 
@@ -260,14 +259,14 @@ namespace ad {
 	};
 
 	Node& multiply(Node& parent1, Node& parent2) {
-		Operation* multOp = new Multiply(1.0);
-		Node* node = new Node(parent1, parent2, multOp);
+		Operation* op = new Multiply(1.0);
+		Node* node = new Node(parent1, parent2, op);
 		return *node;
 	}
 
 	Node& multiply(Node& parent, double x) {
-		Operation* multOp = new Multiply(x);
-		Node* node = new Node(parent, multOp);
+		Operation* op = new Multiply(x);
+		Node* node = new Node(parent, op);
 		return *node;
 	}
 
@@ -287,6 +286,35 @@ namespace ad {
 		return multiply(parent, x);
 	};
 
+	Node& divide(Node& parent1, Node& parent2) {
+		Operation* op = new Divide();
+		Node* node = new Node(parent1, parent2, op);
+		return *node;
+	}
+
+	Node& divide(Node& parent, double x) {
+		Operation* op = new Divide(x, false);
+		Node* node = new Node(parent, op);
+		return *node;
+	}
+
+	Node& divide(double x, Node& parent) {
+		Operation* op = new Divide(x, true);
+		Node* node = new Node(parent, op);
+		return *node;
+	}
+
+	Node& operator/(Node& parent1, Node& parent2) {
+		return divide(parent1, parent2);
+	};
+
+	Node& operator/(Node& parent, double x) {
+		return divide(parent, x);
+	};
+
+	Node& operator/(double x, Node& parent) {
+		return divide(x, parent);
+	};
 
 	//
 	// Divide::Divide(Node& parent1, Node& parent2): Node(parent1, parent2) {

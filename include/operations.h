@@ -96,4 +96,37 @@ namespace ad {
 
 		Multiply(double constant_): constant(constant_){};
 	};
+	
+	struct Divide: Operation {
+		double constant;
+		bool useConstant;
+		bool constantFirst;
+		virtual double evaluate(std::vector<double>& x) {
+			if(useConstant){
+				if(x.size() != 1) {
+					throw "Input to Divide Operation must have exactly one argument when using constant";
+				}
+				if(constantFirst) {
+					return constant/x[0];
+				}
+				return x[0]/constant;
+			}
+			if(x.size() != 2) {
+				throw "Input to Divide Operation must have exactly two arguments";
+			}
+			return x[0]/x[1];		
+		}
+		virtual std::vector<double> differentiate(std::vector<double>& x) {
+			if(useConstant){ 
+				if(constantFirst){
+					return std::vector<double>{-constant/(x[0]*x[0])};
+				}
+				return std::vector<double>{1.0/constant};
+			}
+			return std::vector<double>{1.0/x[1], -x[0]/(x[1]*x[1])};
+		}
+	
+		Divide(): constant(0.0), useConstant(false), constantFirst(false) {}
+		Divide(double constant_, bool constantFirst_): constant(constant_), useConstant(true), constantFirst(constantFirst_) {}
+	};
 }

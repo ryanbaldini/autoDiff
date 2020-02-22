@@ -18,7 +18,7 @@ int main() {
 	ad::Node x3;
 	
 	//create downstream nodes via computations
-	ad::Node n1 = (4 + 2*x1 + 3*x2 - 5*x3)*2;
+	ad::Node n1 = (4 + 2*x1 + 3*x2 - 5*x3)/(x1+x2);
 	ad::Node output = n1 * n1 * n1;
 			
 	try {
