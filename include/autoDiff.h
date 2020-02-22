@@ -20,6 +20,7 @@ struct Node {
 	vector<Node*> getDescendantNodes();
 	vector<Node*> findTerminalNodes();
 	void setParent(Node& node);
+	
 	Node();
 	Node(Node& parent); //copy constructor
 	Node(Node& parent, Operation* operation);
@@ -30,6 +31,23 @@ struct Node {
 	
 	double getValue();
 	double getDerivative();
+};
+
+//constructor requires that the function's graph is completely built when constructed
+//alternatively, could allow use to build function further, and then "compile" it (which checks for errors, etc)
+class Function {
+	private:
+		vector<Node*> nodes;
+		vector<Node*> inputNodes;
+		Node* outputNode;
+
+	public:
+		Function(vector<Node*>& inputNodes_);
+		double evaluate(vector<double> args);
+		vector<double> differentiate(vector<double> args);
+		int nodeCount() {
+			return nodes.size();
+		}
 };
 
 Node& add(Node& parent1, Node& parent2);
@@ -53,20 +71,3 @@ Node& operator*(Node& parent1, Node& parent2);
 Node& operator*(Node& parent, double x);
 Node& operator*(double x, Node& parent);
 
-
-//constructor requires that the function's graph is completely built when constructed
-//alternatively, could allow use to build function further, and then "compile" it (which checks for errors, etc)
-class Function {
-	private:
-		vector<Node*> nodes;
-		vector<Node*> inputNodes;
-		Node* outputNode;
-
-	public:
-		Function(vector<Node*>& inputNodes_);
-		double evaluate(vector<double> args);
-		vector<double> differentiate(vector<double> args);
-		int nodeCount() {
-			return nodes.size();
-		}
-};
