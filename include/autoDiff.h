@@ -192,3 +192,5 @@ class Function {
 		double evaluate(vector<double> args);
 		vector<double> differentiate(vector<double> args);
 };
+
+Add& operator+(Node& parent1, Node& parent2);

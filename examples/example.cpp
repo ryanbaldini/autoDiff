@@ -17,10 +17,10 @@ int main() {
 	Input x1;
 	Input x2;
 	Input x3;
-		
+	
 	//create downstream nodes via computations
 	Multiply mult(x1, x2);
-	Add sum(x2, x3);
+	Add sum = x1 + x2 + x3;
 	NaturalLog ln(mult);
 	Exponentiate ex(sum);
 	RaiseToPower po(ex, ln);
@@ -43,4 +43,4 @@ int main() {
 	catch(const char* err) {
 		cout << "Error: " << err << "\n";
 	}
-}
+};

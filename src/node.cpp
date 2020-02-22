@@ -178,6 +178,11 @@ void Add::updateParentDerivatives() {
 	}
 }
 
+Add& operator+(Node& parent1, Node& parent2) {
+	Add* add = new Add(parent1, parent2);
+	return *add;
+};
+
 Subtract::Subtract(Node& parent1, Node& parent2): Node(parent1, parent2) {
 }
 
