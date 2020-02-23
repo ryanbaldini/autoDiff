@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#define SELFANCESTOR "invalid graph: node is an ancestor of itself"
+
 namespace ad {
 	struct Node {
 		Operation* operation;
@@ -19,46 +21,72 @@ namespace ad {
 		std::vector<Node*> getDescendantNodes();
 		std::vector<Node*> findTerminalNodes();
 		void setParent(Node& node);
+		bool nodeIsAncestor(Node* node);
 	
 		Node();
-		Node(Node& parent); //copy constructor
+		Node(Node& parent); //copy constructor just makes this node an inherit descendant of the arg node
 		Node(Node& parent, Operation* operation);
-		Node(Node& parent1, Node& parent2);
 		Node(Node& parent1, Node& parent2, Operation* operation);
-		Node(std::vector<Node*>& parents);
 		Node(std::vector<Node*>& parents, Operation* operation);
+		~Node();
+		
+		Node& operator= (Node& node); //assignment operator just makes this node an inherit descendant of the arg node
 	
 		double getValue();
 		double getDerivative();
 	};
+	
+	//assignment operator
+	Node& Node::operator= (Node& node)
+	{
+		if(this == &node) {
+			return *this;
+		}
+ 
+		//just be a descendant of the node that is passed in
+		if(operation != nullptr) {
+			delete operation;
+		}
+		operation = new Inherit;
+		parents.resize(1);
+		parents[0] = &node;
+		children.resize(0);
+		
+		if(nodeIsAncestor(this)) {
+			throw SELFANCESTOR;
+		}
+		
+		// return the existing object so we can chain this operator
+		return *this;
+	}
 
+	//base constructor used for input nodess
 	Node::Node(): operation(nullptr), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+		if(nodeIsAncestor(this)) {
+			throw SELFANCESTOR;
+		}
 	}
 
 	//this is the copy constructor. it will create a new node that simply inherits the value of the previous node.
 	Node::Node(Node& parent): operation(new Inherit), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
 		setParent(parent);
+		if(nodeIsAncestor(this)) {
+			throw SELFANCESTOR;
+		}
 	}
 
 	Node::Node(Node& parent, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
 		setParent(parent);
-	}
-
-
-	Node::Node(Node& parent1, Node& parent2): operation(nullptr), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
-		setParent(parent1);
-		setParent(parent2);
+		if(nodeIsAncestor(this)) {
+			throw SELFANCESTOR;
+		}
 	}
 
 	Node::Node(Node& parent1, Node& parent2, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
 		setParent(parent1);
 		setParent(parent2);
-	}
-
-	Node::Node(std::vector<Node*>& parents): operation(nullptr), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
-		int nParents = parents.size();
-		for(int i=0; i<nParents; i++) {
-			setParent(*parents[i]);
+		if(nodeIsAncestor(this)) {
+			throw SELFANCESTOR;
 		}
 	}
 
@@ -66,6 +94,16 @@ namespace ad {
 		int nParents = parents.size();
 		for(int i=0; i<nParents; i++) {
 			setParent(*parents[i]);
+		}
+		if(nodeIsAncestor(this)) {
+			throw SELFANCESTOR;
+		}
+	}
+	
+	Node::~Node() {
+		if(operation != nullptr) {
+			delete operation;
+			operation = nullptr;
 		}
 	}
 
@@ -174,24 +212,42 @@ namespace ad {
 	}
 
 	std::vector<Node*> Node::findTerminalNodes() {
-		std::vector<Node*> terminalOps;
+		std::vector<Node*> terminalNodes;
 		int nChildren = children.size();
 		if(nChildren == 0) {
-			terminalOps.push_back(this);
-			return terminalOps;
+			terminalNodes.push_back(this);
+			return terminalNodes;
 		} else {
 			for(int i=0; i<nChildren; i++) {
-				std::vector<Node*> childTerminalOps = children[i]->findTerminalNodes(); //recursive
-				int nChildTerminalOps = childTerminalOps.size();
-				//put in terminalOps if not in there yet
-				for(int j=0; j<nChildTerminalOps; j++) {
-					if(find(terminalOps.begin(), terminalOps.end(), childTerminalOps[j]) == terminalOps.end()) {
-						terminalOps.push_back(childTerminalOps[j]);
+				std::vector<Node*> childterminalNodes = children[i]->findTerminalNodes(); //recursive
+				int nChildterminalNodes = childterminalNodes.size();
+				//put in terminalNodes if not in there yet
+				for(int j=0; j<nChildterminalNodes; j++) {
+					if(find(terminalNodes.begin(), terminalNodes.end(), childterminalNodes[j]) == terminalNodes.end()) {
+						terminalNodes.push_back(childterminalNodes[j]);
 					}
 				}
 			}
 		}
-		return terminalOps;
+		return terminalNodes;
+	}
+
+	bool Node::nodeIsAncestor(Node* node) {
+		int nParents = parents.size();
+		if(nParents == 0) {
+			return false;
+		}
+		for(int i=0; i<nParents; i++) {
+			if(parents[i] == node) {
+				return true;
+			}
+		}
+		for(int i=0; i<nParents; i++) {
+			if(parents[i]->nodeIsAncestor(node)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	void Node::setParent(Node& node) {

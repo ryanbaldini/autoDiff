@@ -5,6 +5,7 @@
 
 namespace ad {
 	struct Operation {
+		virtual ~Operation(){};
 		virtual double evaluate(std::vector<double>&) { return 0.0; }
 		virtual std::vector<double> differentiate(std::vector<double>&) {return std::vector<double>(0); }
 	};
@@ -34,7 +35,7 @@ namespace ad {
 		virtual std::vector<double> differentiate(std::vector<double>& x) {
 			return std::vector<double>(x.size(), 1.0);
 		}
-
+		
 		Add(double constant_): constant(constant_){};
 	};
 
