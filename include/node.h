@@ -371,8 +371,13 @@ namespace ad {
 		return divide(x, parent);
 	};
 	
-	Node& ln(Node& parent) {
-		Operation* op = new NaturalLog;
+	Node& log(Node& parent, double base = -1) {
+		Operation* op;
+		if(base == -1) {
+			op = new Log();
+		} else {
+			op = new Log(base);
+		}
 		Node* node = new Node(parent, op);
 		return *node;
 	}

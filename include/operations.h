@@ -109,12 +109,18 @@ namespace ad {
 					throw "Input to Divide Operation must have exactly one argument when using constant";
 				}
 				if(constantFirst) {
+					if(x[0] == 0) {
+						throw "Divide Operation tried to divide by zero";
+					}
 					return constant/x[0];
 				}
 				return x[0]/constant;
 			}
 			if(x.size() != 2) {
 				throw "Input to Divide Operation must have exactly two arguments";
+			}
+			if(x[1] == 0) {
+				throw "Divide Operation tried to divide by zero";
 			}
 			return x[0]/x[1];		
 		}
@@ -129,24 +135,48 @@ namespace ad {
 		}
 	
 		Divide(): constant(0.0), useConstant(false), constantFirst(false) {}
-		Divide(double constant_, bool constantFirst_): constant(constant_), useConstant(true), constantFirst(constantFirst_) {}
+		Divide(double constant_, bool constantFirst_): constant(constant_), useConstant(true), constantFirst(constantFirst_) {
+			if(!constantFirst && constant == 0) {
+				throw "Tried to create a Divide operation that divides by zero";
+			}
+		}
 	};
 	
-	struct NaturalLog: Operation {
+	struct Log: Operation {
+		double base;
+		bool doNaturalLog;
 		virtual double evaluate(std::vector<double>& x) {
 			if(x.size() != 1) {
-				throw "Input to NaturalLog Operation must have exactly one argument";
+				throw "Input to Log Operation must have exactly one argument";
 			}
 			if(x[0] <= 0) {
-				throw "NaturalLog operation tried to take log of non-positive number";
+				throw "Log operation tried to take log of non-positive number";
 			}
-			return log(x[0]);	
+			if(doNaturalLog) {
+				return log(x[0]);
+			} else {
+				return log(x[0])/log(base);
+			}
 		}
 		virtual std::vector<double> differentiate(std::vector<double>& x) {
 			if(x.size() != 1) {
-				throw "Input to NaturalLog Operation must have exactly one argument";
+				throw "Input to Log Operation must have exactly one argument";
 			}
-			return std::vector<double>{1.0/x[0]};
+			if(x[0] == 0) {
+				throw "Log Operation tried to divide by zero during differentiation";
+			}
+			if(doNaturalLog) {
+				return std::vector<double>{1.0/x[0]};
+			} else {
+				return std::vector<double>{1.0/(log(base)*x[0])};
+			}
+		}
+		
+		Log(): base(0.0), doNaturalLog(true) {}
+		Log(double base_): base(base_), doNaturalLog(false) {
+			if(base <= 0) {
+				throw "Log operation requires base > 0";
+			}
 		}
 	};
 }
