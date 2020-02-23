@@ -179,4 +179,19 @@ namespace ad {
 			}
 		}
 	};
+	
+	struct Exp: Operation {
+		virtual double evaluate(std::vector<double>& x) {
+			if(x.size() != 1) {
+				throw "Input to Exponentiate Operation must have exactly one argument";
+			}
+			return exp(x[0]);
+		}
+		virtual std::vector<double> differentiate(std::vector<double>& x) {
+			if(x.size() != 1) {
+				throw "Input to Exponentiate Operation must have exactly one argument";
+			}
+			return std::vector<double>{exp(x[0])};
+		}
+	};
 }

@@ -13,6 +13,7 @@ namespace ad {
 		std::vector<Node*> children;
 		bool evaluated;
 		bool differentiatedParents;
+		bool dynamicallyAllocated;
 	
 		void evaluate();
 		void differentiate();
@@ -22,6 +23,8 @@ namespace ad {
 		std::vector<Node*> findTerminalNodes();
 		void setParent(Node& node);
 		bool nodeIsAncestor(Node* node);
+		void unlink();
+		void deleteDynamicallyAllocatedAncestors();
 	
 		Node();
 		Node(Node& parent); //copy constructor just makes this node an inherit descendant of the arg node
@@ -37,9 +40,9 @@ namespace ad {
 	};
 	
 	//assignment operator
-	Node& Node::operator= (Node& node)
+	Node& Node::operator= (Node& parent)
 	{
-		if(this == &node) {
+		if(this == &parent) {
 			return *this;
 		}
  
@@ -49,8 +52,9 @@ namespace ad {
 		}
 		operation = new Inherit;
 		parents.resize(1);
-		parents[0] = &node;
+		parents[0] = &parent;
 		children.resize(0);
+		parent.children.push_back(this);
 		
 		if(nodeIsAncestor(this)) {
 			throw SELFANCESTOR;
@@ -60,29 +64,29 @@ namespace ad {
 		return *this;
 	}
 
-	//base constructor used for input nodess
-	Node::Node(): operation(nullptr), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+	//base constructor used for input nodes
+	Node::Node(): operation(nullptr), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		if(nodeIsAncestor(this)) {
 			throw SELFANCESTOR;
 		}
 	}
 
 	//this is the copy constructor. it will create a new node that simply inherits the value of the previous node.
-	Node::Node(Node& parent): operation(new Inherit), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+	Node::Node(Node& parent): operation(new Inherit), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		setParent(parent);
 		if(nodeIsAncestor(this)) {
 			throw SELFANCESTOR;
 		}
 	}
 
-	Node::Node(Node& parent, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+	Node::Node(Node& parent, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		setParent(parent);
 		if(nodeIsAncestor(this)) {
 			throw SELFANCESTOR;
 		}
 	}
 
-	Node::Node(Node& parent1, Node& parent2, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+	Node::Node(Node& parent1, Node& parent2, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		setParent(parent1);
 		setParent(parent2);
 		if(nodeIsAncestor(this)) {
@@ -90,7 +94,7 @@ namespace ad {
 		}
 	}
 
-	Node::Node(std::vector<Node*>& parents, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false) {
+	Node::Node(std::vector<Node*>& parents, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		int nParents = parents.size();
 		for(int i=0; i<nParents; i++) {
 			setParent(*parents[i]);
@@ -100,11 +104,55 @@ namespace ad {
 		}
 	}
 	
+	void Node::unlink() {
+		//remove self from each parent's children vector
+		for(Node* parent : parents) {
+			std::vector<Node*> newChildVec;
+			for(Node* child : parent->children) {
+				if(child != this) {
+					newChildVec.push_back(child);
+				}
+			}
+			parent->children = newChildVec;
+		}
+		
+		//remove self from each child's parent vector
+		for(Node* child : children) {
+			std::vector<Node*> newParentVec;
+			for(Node* parent : child->parents) {
+				if(parent != this) {
+					newParentVec.push_back(parent);
+				}
+			}
+			child->parents = newParentVec;
+		}
+	}
+	
+	void Node::deleteDynamicallyAllocatedAncestors() {
+		//go through each parent and delete if dynamically allocated
+		//since the parent vector will generally be resized when parent is deleted (due to unlink()), we need to iterate carefully through this!
+		while(true) {
+			bool hasDynamicallyAllocatedParent(false);
+			for(Node* parent : parents) {
+				if(parent->dynamicallyAllocated){
+					hasDynamicallyAllocatedParent = true;
+					delete parent; //calls destructor first, which will in turn delete any dynamically allocated ancestors of parent
+					break;
+				}
+			}
+			if(!hasDynamicallyAllocatedParent) {
+				return;
+			}
+		}
+	}
+	
 	Node::~Node() {
+		deleteDynamicallyAllocatedAncestors();
 		if(operation != nullptr) {
 			delete operation;
 			operation = nullptr;
 		}
+		unlink();
 	}
 
 	double Node::getValue() {
@@ -258,12 +306,14 @@ namespace ad {
 	Node& add(Node& parent1, Node& parent2) {
 		Operation* op = new Add(0.0);
 		Node* node = new Node(parent1, parent2, op);
+		node->dynamicallyAllocated = true;
 		return *node;
 	}
 
 	Node& add(Node& parent, double x) {
 		Operation* op = new Add(x);
 		Node* node = new Node(parent, op);
+		node->dynamicallyAllocated = true;
 		return *node;
 	}
 
@@ -286,18 +336,21 @@ namespace ad {
 	Node& subtract(Node& parent1, Node& parent2) {
 		Operation* op = new Subtract();
 		Node* node = new Node(parent1, parent2, op);
+		node->dynamicallyAllocated = true;
 		return *node;
 	}
 
 	Node& subtract(Node& parent, double x) {
 		Operation* op = new Subtract(x, false);
 		Node* node = new Node(parent, op);
+		node->dynamicallyAllocated = true;
 		return *node;
 	}
 
 	Node& subtract(double x, Node& parent) {
 		Operation* op = new Subtract(x, true);
 		Node* node = new Node(parent, op);
+		node->dynamicallyAllocated = true;
 		return *node;
 	}
 
@@ -316,12 +369,14 @@ namespace ad {
 	Node& multiply(Node& parent1, Node& parent2) {
 		Operation* op = new Multiply(1.0);
 		Node* node = new Node(parent1, parent2, op);
+		node->dynamicallyAllocated = true;
 		return *node;
 	}
 
 	Node& multiply(Node& parent, double x) {
 		Operation* op = new Multiply(x);
 		Node* node = new Node(parent, op);
+		node->dynamicallyAllocated = true;
 		return *node;
 	}
 
@@ -344,18 +399,21 @@ namespace ad {
 	Node& divide(Node& parent1, Node& parent2) {
 		Operation* op = new Divide();
 		Node* node = new Node(parent1, parent2, op);
+		node->dynamicallyAllocated = true;
 		return *node;
 	}
 
 	Node& divide(Node& parent, double x) {
 		Operation* op = new Divide(x, false);
 		Node* node = new Node(parent, op);
+		node->dynamicallyAllocated = true;
 		return *node;
 	}
 
 	Node& divide(double x, Node& parent) {
 		Operation* op = new Divide(x, true);
 		Node* node = new Node(parent, op);
+		node->dynamicallyAllocated = true;
 		return *node;
 	}
 
@@ -379,20 +437,17 @@ namespace ad {
 			op = new Log(base);
 		}
 		Node* node = new Node(parent, op);
+		node->dynamicallyAllocated = true;
+		return *node;
+	}
+	
+	Node& exp(Node& parent) {
+		Operation* op = new Exp;
+		Node* node = new Node(parent, op);
+		node->dynamicallyAllocated = true;
 		return *node;
 	}
 
-	// Exponentiate::Exponentiate(Node& parent): Node(parent) {
-	// }
-	//
-	// void Exponentiate::fillMyValue() {
-	// 	value = exp(parents[0]->value);
-	// }
-	//
-	// void Exponentiate::updateParentDerivatives() {
-	// 	parents[0]->derivative += derivative * exp(parents[0]->value);
-	// }
-	//
 	// Square::Square(Node& parent): Node(parent) {
 	// }
 	//
