@@ -25,6 +25,7 @@ namespace ad {
 		bool nodeIsAncestor(Node* node);
 		void unlink();
 		void deleteDynamicallyAllocatedAncestors();
+		void replaceWithDynamicCopy();
 	
 		Node();
 		Node(Node& parent); //copy constructor just makes this node an inherit descendant of the arg node
@@ -33,17 +34,25 @@ namespace ad {
 		Node(std::vector<Node*>& parents, Operation* operation);
 		~Node();
 		
-		Node& operator= (Node& node); //assignment operator just makes this node an inherit descendant of the arg node
+		Node& operator= (Node& node);
 	
 		double getValue();
 		double getDerivative();
 	};
 	
 	//assignment operator
+	//directly inherit from node passed in
+	//if this node is already in the graph, place that copy on the heap
 	Node& Node::operator= (Node& parent)
 	{
 		if(this == &parent) {
 			return *this;
+		}
+		
+		//if the assignment operator is being called, then this node probably already exists
+		//if it has any connections at all to the system now, then make a copy of it on the heap
+		if(this->parents.size() > 0 || this->children.size() > 0) {
+			this->replaceWithDynamicCopy();
 		}
  
 		//just be a descendant of the node that is passed in
@@ -144,6 +153,24 @@ namespace ad {
 				return;
 			}
 		}
+	}
+	
+	//replace this node with a copy of it on the heap. 
+	//the copy takes any connections that this one had, effectively disconnecting this node from the system
+	void Node::replaceWithDynamicCopy() {
+		Node* node = new Node;
+		node->operation = this->operation;
+		node->dynamicallyAllocated = true;
+		for(Node* parent : this->parents) {
+			node->setParent(*parent);	
+		}
+		node->children = this->children;
+		for(Node* child : this->children) {
+			child->parents.push_back(node);
+		}
+		
+		this->operation = nullptr;
+		this->unlink();
 	}
 	
 	Node::~Node() {

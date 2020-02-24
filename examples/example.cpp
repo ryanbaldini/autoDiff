@@ -23,6 +23,7 @@ int main() {
 		//create downstream nodes via computations
 		ad::Node n1 = (4 + 2*x1 + 3*x2 - 5*x3)/(x1+x3);
 		ad::Node n2 = exp(x1/x2);
+		n2 = n1 * n2; //reassigning is ok
 		ad::Node outputNode = ad::log(n1 * n1 * n2 * n2);
 
 		//put in function
@@ -41,14 +42,39 @@ int main() {
 		cout << "Error: " << err << "\n";
  	}
 	
-	//invalid circular graph
+	//invalid graph: input node becomes a calculated node
+	try {
+		cout << "\nExample 2\n";
+		ad::Node x1;
+		ad::Node x2;
+		
+		ad::Node n1 = x1 * x1;
+		ad::Node n2 = exp(x2);
+		x1 = n2*2; //bad!
+		
+		vector<ad::Node*> inputNodes = {&x1,&x2};
+		ad::Function func(inputNodes);
+		
+		vector<double> input{1,2};
+		double output = func.evaluate(input);
+		vector<double> gradient = func.differentiate(input);
+		cout << "output: " << output << "\n";
+		cout << "gradient: ";
+		printVector(gradient);
+	}
+	catch(const char* err) {
+		cout << "Error: " << err << "\n";
+ 	}
+	
+	//invalid graph: multiple terminal nodes
 	try {
 		cout << "\nExample 2\n";
 		ad::Node x1;
 		ad::Node x2;
 		
 		ad::Node n1 = x1 * x2;
-		x1 = 2*n1;
+		ad::Node n2 = exp(x2);
+		//two terminal nodes: n1 and n2
 		
 		vector<ad::Node*> inputNodes = {&x1,&x2};
 		ad::Function func(inputNodes);
