@@ -68,7 +68,7 @@ int main() {
 	
 	//invalid graph: multiple terminal nodes
 	try {
-		cout << "\nExample 2\n";
+		cout << "\nExample 3\n";
 		ad::Node x1;
 		ad::Node x2;
 		
