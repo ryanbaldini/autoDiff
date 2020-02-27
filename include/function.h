@@ -23,25 +23,25 @@ namespace ad {
 		if(nInputs == 0) {
 			throw "No inputs to function";
 		}
-		for(int i=0; i<nInputs; i++) {
-			if(inputNodes[i]->operation != nullptr) {
+		for(Node* inputNode : inputNodes) {
+			if(inputNode->operation != nullptr) {
 				throw "Input nodes to a function must not have an operation (i.e., require operation = nullptr)";
 			}
-		} 
+		}
 	
 		//check that we have exactly one terminal Node
-		for(int i=0; i<nInputs; i++) {
-			std::vector<Node*> terminalOps = inputNodes[i]->findTerminalNodes();
-			int nTerminalOps = terminalOps.size();
-			if(nTerminalOps == 0) {
+		for(Node* inputNode : inputNodes) {
+			std::vector<Node*> terminalNodes = inputNode->findTerminalNodes();
+			int nTerminalNodes = terminalNodes.size();
+			if(nTerminalNodes == 0) {
 				throw "At least one input lacks a terminal node. Circularity?";
-			} else if(nTerminalOps > 1) {
+			} else if(nTerminalNodes > 1) {
 				throw "More than one terminal node. There must be only one.";
 			} else {
 				if(outputNode == nullptr) {
-					outputNode = terminalOps[0];
+					outputNode = terminalNodes[0];
 				} else {
-					if(outputNode != terminalOps[0]) {
+					if(outputNode != terminalNodes[0]) {
 						throw "More than one terminal node. There must be only one.";
 					}
 				}
@@ -50,15 +50,36 @@ namespace ad {
 		if(outputNode == nullptr) {
 			throw "No terminal node. Circular graph?";
 		}
-	
+		
+		//check that there are not any origin nodes of this system not represented by the inputs
+		std::vector<Node*> originNodes = outputNode->findOriginNodes();
+		if(originNodes.size() > inputNodes.size()) {
+			throw "There are more origin nodes in this graph than have been provided as inputs.";
+		} else if(originNodes.size() < inputNodes.size()) {
+			throw "There are fewer origin nodes in this graph than have been provided as inputs.";
+		} else {
+			for(Node* originNode : originNodes) {
+				bool found(false);
+				for(Node* inputNode : inputNodes) {
+					if(inputNode == originNode) {
+						found = true;
+						break;
+					}
+				}
+				if(!found) {
+					throw "An origin node of this graph is not represented among the inputs nodes provided.";
+				}
+			}
+		}
+		
+		
 		//collect all nodes into std::vector
-		for(int i=0; i<nInputs; i++) {
-			nodes.push_back(inputNodes[i]);
-			std::vector<Node*> descendantNodes = inputNodes[i]->getDescendantNodes();
-			int nDescendantNodes = descendantNodes.size();
-			for(int j=0; j<nDescendantNodes; j++) {
-				if(find(nodes.begin(), nodes.end(), descendantNodes[j]) == nodes.end()) {
-					nodes.push_back(descendantNodes[j]);
+		for(Node* inputNode : inputNodes) {
+			nodes.push_back(inputNode);
+			std::vector<Node*> descendantNodes = inputNode->getDescendantNodes();
+			for(Node* descendantNode : descendantNodes) {
+				if(find(nodes.begin(), nodes.end(), descendantNode) == nodes.end()) {
+					nodes.push_back(descendantNode);
 				}
 			}
 		}
@@ -75,9 +96,8 @@ namespace ad {
 		}
 	
 		//set all nodes to unevaluated
-		int nNodes = nodes.size();
-		for(int i=0; i<nNodes; i++) {
-			nodes[i]->evaluated = false;
+		for(Node* node : nodes) {
+			node->evaluated = false;
 		}
 	
 		for(int i=0; i<nInputs; i++) {
@@ -92,10 +112,9 @@ namespace ad {
 		evaluate(args);
 	
 		//set all nodes to undifferentiated
-		int nNodes = nodes.size();
-		for(int i=0; i<nNodes; i++) {
-			nodes[i]->differentiatedParents = false;
-			nodes[i]->derivative = 0.0;
+		for(Node* node : nodes) {
+			node->differentiatedParents = false;
+			node->derivative = 0.0;
 		}
 	
 		outputNode->derivative = 1.0; //derivative of output with respect to itself is 1

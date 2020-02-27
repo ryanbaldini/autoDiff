@@ -21,6 +21,7 @@ namespace ad {
 		void updateParentDerivatives();
 		std::vector<Node*> getDescendantNodes();
 		std::vector<Node*> findTerminalNodes();
+		std::vector<Node*> findOriginNodes();
 		void setParent(Node& node);
 		bool nodeIsAncestor(Node* node);
 		void unlink();
@@ -305,6 +306,27 @@ namespace ad {
 			}
 		}
 		return terminalNodes;
+	}
+
+	std::vector<Node*> Node::findOriginNodes() {
+		std::vector<Node*> originNodes;
+		int nParents = parents.size();
+		if(nParents == 0) {
+			originNodes.push_back(this);
+			return originNodes;
+		} else {
+			for(int i=0; i<nParents; i++) {
+				std::vector<Node*> parentOriginNodes = parents[i]->findOriginNodes(); //recursive
+				int nParentOriginNodes = parentOriginNodes.size();
+				//put in originNodes if not in there yet
+				for(int j=0; j<nParentOriginNodes; j++) {
+					if(find(originNodes.begin(), originNodes.end(), parentOriginNodes[j]) == originNodes.end()) {
+						originNodes.push_back(parentOriginNodes[j]);
+					}
+				}
+			}
+		}
+		return originNodes;
 	}
 
 	bool Node::nodeIsAncestor(Node* node) {
