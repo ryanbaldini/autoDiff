@@ -19,7 +19,6 @@ int main() {
 		ad::Node x1;
 		ad::Node x2;
 		ad::Node x3;
-		ad::Node x4;
 	
 		//create downstream nodes via computations
 		ad::Node n1 = (4 + 2*x1 + 3*x2 - 5*x3)/(x1+x3);
