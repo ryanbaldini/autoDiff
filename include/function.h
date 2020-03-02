@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 namespace ad {
 	//constructor requires that the function's graph is completely built when constructed
@@ -11,8 +11,8 @@ namespace ad {
 
 		public:
 			Function(std::vector<Node*>& inputNodes_);
-			double evaluate(std::vector<double> args);
-			std::vector<double> differentiate(std::vector<double> args);
+			arma::mat evaluate(std::vector<arma::mat> args);
+			std::vector<arma::mat> differentiate(std::vector<arma::mat> args);
 			int nodeCount() {
 				return nodes.size();
 			}
@@ -88,7 +88,7 @@ namespace ad {
 		//should be impossible if used correctly?
 	}
 
-	double Function::evaluate(std::vector<double> args) {
+	arma::mat Function::evaluate(std::vector<arma::mat> args) {
 		int nArgs = args.size();
 		int nInputs = inputNodes.size();
 		if(nArgs != nInputs) {
@@ -108,20 +108,21 @@ namespace ad {
 		return outputNode->value;
 	}
 
-	std::vector<double> Function::differentiate(std::vector<double> args) {
+	std::vector<arma::mat> Function::differentiate(std::vector<arma::mat> args) {
 		evaluate(args);
 	
 		//set all nodes to undifferentiated
 		for(Node* node : nodes) {
 			node->differentiatedParents = false;
-			node->derivative = 0.0;
+			node->derivative = node->value;
+			node->derivative.fill(0);
 		}
 	
 		outputNode->derivative = 1.0; //derivative of output with respect to itself is 1
 		outputNode->differentiate(); //recursive differentiation starts here
 	
 		int nInputs = inputNodes.size();
-		std::vector<double> derivatives(nInputs);
+		std::vector<arma::mat> derivatives(nInputs);
 		for(int i=0; i<nInputs; i++) {
 			derivatives[i] = inputNodes[i]->derivative;
 	 	}

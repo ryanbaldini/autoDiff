@@ -7,8 +7,8 @@
 namespace ad {
 	struct Node {
 		Operation* operation;
-		double value;
-		double derivative;
+		arma::mat value;
+		arma::mat derivative;
 		std::vector<Node*> parents;
 		std::vector<Node*> children;
 		bool evaluated;
@@ -37,8 +37,8 @@ namespace ad {
 		
 		Node& operator= (Node& node);
 	
-		double getValue();
-		double getDerivative();
+		arma::mat getValue();
+		arma::mat getDerivative();
 	};
 	
 	//assignment operator
@@ -75,28 +75,28 @@ namespace ad {
 	}
 
 	//base constructor used for input nodes
-	Node::Node(): operation(nullptr), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
+	Node::Node(): operation(nullptr), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		if(nodeIsAncestor(this)) {
 			throw SELFANCESTOR;
 		}
 	}
 
 	//this is the copy constructor. it will create a new node that simply inherits the value of the previous node.
-	Node::Node(Node& parent): operation(new Inherit), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
+	Node::Node(Node& parent): operation(new Inherit), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		setParent(parent);
 		if(nodeIsAncestor(this)) {
 			throw SELFANCESTOR;
 		}
 	}
 
-	Node::Node(Node& parent, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
+	Node::Node(Node& parent, Operation* operation_): operation(operation_), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		setParent(parent);
 		if(nodeIsAncestor(this)) {
 			throw SELFANCESTOR;
 		}
 	}
 
-	Node::Node(Node& parent1, Node& parent2, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
+	Node::Node(Node& parent1, Node& parent2, Operation* operation_): operation(operation_), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		setParent(parent1);
 		setParent(parent2);
 		if(nodeIsAncestor(this)) {
@@ -104,7 +104,7 @@ namespace ad {
 		}
 	}
 
-	Node::Node(std::vector<Node*>& parents, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
+	Node::Node(std::vector<Node*>& parents, Operation* operation_): operation(operation_), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		int nParents = parents.size();
 		for(int i=0; i<nParents; i++) {
 			setParent(*parents[i]);
@@ -183,11 +183,11 @@ namespace ad {
 		unlink();
 	}
 
-	double Node::getValue() {
+	arma::mat Node::getValue() {
 		return value;
 	}
 
-	double Node::getDerivative() {
+	arma::mat Node::getDerivative() {
 		return derivative;
 	}
 
@@ -244,7 +244,7 @@ namespace ad {
 			return;
 		}
 		int nParents = parents.size();
-		std::vector<double> inputValues(nParents);
+		std::vector<arma::mat> inputValues(nParents);
 		for(int i=0; i<nParents; i++) {
 			inputValues[i] = parents[i]->value;
 		}
@@ -256,13 +256,25 @@ namespace ad {
 			return;
 		}
 		int nParents = parents.size();
-		std::vector<double> inputValues(nParents);
+		std::vector<arma::mat> inputValues(nParents);
 		for(int i=0; i<nParents; i++) {
 			inputValues[i] = parents[i]->value;
 		}
-		std::vector<double> derivatives = operation->differentiate(inputValues);
+		std::vector<arma::mat> derivatives = operation->differentiate(inputValues);
+		std::cout << "here " << this << "\n";
+		std::cout << "nParents " << nParents << "\n";
 		for(int i=0; i<nParents; i++) {
-			parents[i]->derivative += derivatives[i] * derivative;
+			std::cout << "heya!\n";
+			if(derivative.n_rows == 1 && derivative.n_cols == 1) {
+				double floatDeriv = derivative(0,0);
+				arma::mat boop(derivatives[i] * floatDeriv);
+				std::cout << "go\n";
+				parents[i]->derivative += boop;
+			} else {
+				arma::mat boop(derivatives[i] % derivative);
+				std::cout << "go\n";
+				parents[i]->derivative += boop;
+			}
 		}
 	}
 
@@ -381,121 +393,128 @@ namespace ad {
 	Node& operator+(double x, Node& parent) {
 		return add(parent, x);
 	};
-
-	Node& subtract(Node& parent1, Node& parent2) {
-		Operation* op = new Subtract();
-		Node* node = new Node(parent1, parent2, op);
-		node->dynamicallyAllocated = true;
-		return *node;
-	}
-
-	Node& subtract(Node& parent, double x) {
-		Operation* op = new Subtract(x, false);
-		Node* node = new Node(parent, op);
-		node->dynamicallyAllocated = true;
-		return *node;
-	}
-
-	Node& subtract(double x, Node& parent) {
-		Operation* op = new Subtract(x, true);
-		Node* node = new Node(parent, op);
-		node->dynamicallyAllocated = true;
-		return *node;
-	}
-
-	Node& operator-(Node& parent1, Node& parent2) {
-		return subtract(parent1, parent2);
-	};
-
-	Node& operator-(Node& parent, double x) {
-		return subtract(parent, x);
-	};
-
-	Node& operator-(double x, Node& parent) {
-		return subtract(x, parent);
-	};
-
-	Node& multiply(Node& parent1, Node& parent2) {
-		Operation* op = new Multiply(1.0);
-		Node* node = new Node(parent1, parent2, op);
-		node->dynamicallyAllocated = true;
-		return *node;
-	}
-
-	Node& multiply(Node& parent, double x) {
-		Operation* op = new Multiply(x);
-		Node* node = new Node(parent, op);
-		node->dynamicallyAllocated = true;
-		return *node;
-	}
-
-	Node& multiply(double x, Node& parent) {
-		return multiply(parent, x);
-	}
-
-	Node& operator*(Node& parent1, Node& parent2) {
-		return multiply(parent1, parent2);
-	};
-
-	Node& operator*(Node& parent, double x) {
-		return multiply(parent, x);
-	};
-
-	Node& operator*(double x, Node& parent) {
-		return multiply(parent, x);
-	};
-
-	Node& divide(Node& parent1, Node& parent2) {
-		Operation* op = new Divide();
-		Node* node = new Node(parent1, parent2, op);
-		node->dynamicallyAllocated = true;
-		return *node;
-	}
-
-	Node& divide(Node& parent, double x) {
-		Operation* op = new Divide(x, false);
-		Node* node = new Node(parent, op);
-		node->dynamicallyAllocated = true;
-		return *node;
-	}
-
-	Node& divide(double x, Node& parent) {
-		Operation* op = new Divide(x, true);
-		Node* node = new Node(parent, op);
-		node->dynamicallyAllocated = true;
-		return *node;
-	}
-
-	Node& operator/(Node& parent1, Node& parent2) {
-		return divide(parent1, parent2);
-	};
-
-	Node& operator/(Node& parent, double x) {
-		return divide(parent, x);
-	};
-
-	Node& operator/(double x, Node& parent) {
-		return divide(x, parent);
-	};
 	
-	Node& log(Node& parent, double base = -1) {
-		Operation* op;
-		if(base == -1) {
-			op = new Log();
-		} else {
-			op = new Log(base);
-		}
+	Node& sumElements(Node& parent) {
+		Operation *op = new SumElements;
 		Node* node = new Node(parent, op);
 		node->dynamicallyAllocated = true;
 		return *node;
 	}
-	
-	Node& exp(Node& parent) {
-		Operation* op = new Exp;
-		Node* node = new Node(parent, op);
-		node->dynamicallyAllocated = true;
-		return *node;
-	}
+
+	// Node& subtract(Node& parent1, Node& parent2) {
+	// 	Operation* op = new Subtract();
+	// 	Node* node = new Node(parent1, parent2, op);
+	// 	node->dynamicallyAllocated = true;
+	// 	return *node;
+	// }
+	//
+	// Node& subtract(Node& parent, double x) {
+	// 	Operation* op = new Subtract(x, false);
+	// 	Node* node = new Node(parent, op);
+	// 	node->dynamicallyAllocated = true;
+	// 	return *node;
+	// }
+	//
+	// Node& subtract(double x, Node& parent) {
+	// 	Operation* op = new Subtract(x, true);
+	// 	Node* node = new Node(parent, op);
+	// 	node->dynamicallyAllocated = true;
+	// 	return *node;
+	// }
+	//
+	// Node& operator-(Node& parent1, Node& parent2) {
+	// 	return subtract(parent1, parent2);
+	// };
+	//
+	// Node& operator-(Node& parent, double x) {
+	// 	return subtract(parent, x);
+	// };
+	//
+	// Node& operator-(double x, Node& parent) {
+	// 	return subtract(x, parent);
+	// };
+	//
+	// Node& multiply(Node& parent1, Node& parent2) {
+	// 	Operation* op = new Multiply(1.0);
+	// 	Node* node = new Node(parent1, parent2, op);
+	// 	node->dynamicallyAllocated = true;
+	// 	return *node;
+	// }
+	//
+	// Node& multiply(Node& parent, double x) {
+	// 	Operation* op = new Multiply(x);
+	// 	Node* node = new Node(parent, op);
+	// 	node->dynamicallyAllocated = true;
+	// 	return *node;
+	// }
+	//
+	// Node& multiply(double x, Node& parent) {
+	// 	return multiply(parent, x);
+	// }
+	//
+	// Node& operator*(Node& parent1, Node& parent2) {
+	// 	return multiply(parent1, parent2);
+	// };
+	//
+	// Node& operator*(Node& parent, double x) {
+	// 	return multiply(parent, x);
+	// };
+	//
+	// Node& operator*(double x, Node& parent) {
+	// 	return multiply(parent, x);
+	// };
+	//
+	// Node& divide(Node& parent1, Node& parent2) {
+	// 	Operation* op = new Divide();
+	// 	Node* node = new Node(parent1, parent2, op);
+	// 	node->dynamicallyAllocated = true;
+	// 	return *node;
+	// }
+	//
+	// Node& divide(Node& parent, double x) {
+	// 	Operation* op = new Divide(x, false);
+	// 	Node* node = new Node(parent, op);
+	// 	node->dynamicallyAllocated = true;
+	// 	return *node;
+	// }
+	//
+	// Node& divide(double x, Node& parent) {
+	// 	Operation* op = new Divide(x, true);
+	// 	Node* node = new Node(parent, op);
+	// 	node->dynamicallyAllocated = true;
+	// 	return *node;
+	// }
+	//
+	// Node& operator/(Node& parent1, Node& parent2) {
+	// 	return divide(parent1, parent2);
+	// };
+	//
+	// Node& operator/(Node& parent, double x) {
+	// 	return divide(parent, x);
+	// };
+	//
+	// Node& operator/(double x, Node& parent) {
+	// 	return divide(x, parent);
+	// };
+	//
+	// Node& log(Node& parent, double base = -1) {
+	// 	Operation* op;
+	// 	if(base == -1) {
+	// 		op = new Log();
+	// 	} else {
+	// 		op = new Log(base);
+	// 	}
+	// 	Node* node = new Node(parent, op);
+	// 	node->dynamicallyAllocated = true;
+	// 	return *node;
+	// }
+	//
+	// Node& exp(Node& parent) {
+	// 	Operation* op = new Exp;
+	// 	Node* node = new Node(parent, op);
+	// 	node->dynamicallyAllocated = true;
+	// 	return *node;
+	// }
 
 	// Square::Square(Node& parent): Node(parent) {
 	// }
