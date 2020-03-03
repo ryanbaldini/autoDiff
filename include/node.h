@@ -27,6 +27,7 @@ namespace ad {
 		void unlink();
 		void deleteDynamicallyAllocatedAncestors();
 		void replaceWithDynamicCopy();
+		void replaceNodeWithSelf(Node& node);
 	
 		Node();
 		Node(Node& parent); //copy constructor just makes this node an inherit descendant of the arg node
@@ -41,12 +42,42 @@ namespace ad {
 		double getDerivative();
 	};
 	
+	void Node::replaceNodeWithSelf(Node& node) {
+		if(this == &node) {
+			return;
+		}
+		if(!node.dynamicallyAllocated) {
+			throw "can't replace a non-dynamicallyAllocated node with self";
+		}
+		//then copy over info
+		operation = node.operation;
+		node.operation = nullptr; //so it's not deleted when node is deleted
+		parents = node.parents;
+		for(Node* parent : parents) {
+			int nParentsChildren = parent->children.size();
+			for(int i=0; i<nParentsChildren; i++) {
+				if(parent->children[i] == &node) {
+					parent->children[i] = this;
+				}
+			}
+		}
+		children = node.children;
+		for(Node* child : children) {
+			int nChildrensParents = child->parents.size();
+			for(int i=0; i<nChildrensParents; i++) {
+				if(child->parents[i] == &node) {
+					child->parents[i] = this;
+				}
+			}
+		}
+		node.unlink(); //so it doesn't delete any dynamic ancestors
+		delete &node;
+	}
+	
 	//assignment operator
-	//directly inherit from node passed in
-	//if this node is already in the graph, place that copy on the heap
-	Node& Node::operator= (Node& parent)
+	Node& Node::operator= (Node& node)
 	{
-		if(this == &parent) {
+		if(this == &node) {
 			return *this;
 		}
 		
@@ -55,82 +86,55 @@ namespace ad {
 		if(this->parents.size() > 0 || this->children.size() > 0) {
 			this->replaceWithDynamicCopy();
 		}
- 
-		//just be a descendant of the node that is passed in
-		if(operation != nullptr) {
-			delete operation;
+		
+		if(node.dynamicallyAllocated) {
+			replaceNodeWithSelf(node);
+		} else {
+			//just be a descendant of the node that is passed in
+			if(operation != nullptr) {
+				delete operation;
+			}
+			operation = new Inherit;
+			parents.resize(0);
+			children.resize(0);
+			setParent(node);
 		}
-		operation = new Inherit;
-		parents.resize(1);
-		parents[0] = &parent;
-		children.resize(0);
-		parent.children.push_back(this);
 		
 		if(nodeIsAncestor(this)) {
 			throw SELFANCESTOR;
 		}
 		
-		// return the existing object so we can chain this operator
 		return *this;
 	}
 
 	//base constructor used for input nodes
-	Node::Node(): operation(nullptr), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
-		if(nodeIsAncestor(this)) {
-			throw SELFANCESTOR;
-		}
-	}
+	Node::Node(): operation(nullptr), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {}
 
 	//this is the copy constructor. 
 	//if the node passed in is dynamicallyAllocated (not in scope - only possible when creating nodes with operators), replace that node with self
 	//else, inherit it as a parent
 	Node::Node(Node& node): value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		if(node.dynamicallyAllocated) {
-			operation = node.operation;
-			node.operation = nullptr; //so it's not deleted when node is deleted
-			parents = node.parents;
-			for(Node* parent : parents) {
-				int nParentsChildren = parent->children.size();
-				for(int i=0; i<nParentsChildren; i++) {
-					if(parent->children[i] == &node) {
-						parent->children[i] = this;
-					}
-				}
-			}
-			//can't have children at this point
-			node.unlink(); //so it doesn't delete any dynamic ancestors
-			delete &node;
+			replaceNodeWithSelf(node);
 		} else {
 			operation = new Inherit;
 			setParent(node);
-		}
-		if(nodeIsAncestor(this)) {
-			throw SELFANCESTOR;
 		}
 	}
 
 	Node::Node(Node& parent, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		setParent(parent);
-		if(nodeIsAncestor(this)) {
-			throw SELFANCESTOR;
-		}
 	}
 
 	Node::Node(Node& parent1, Node& parent2, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		setParent(parent1);
 		setParent(parent2);
-		if(nodeIsAncestor(this)) {
-			throw SELFANCESTOR;
-		}
 	}
 
 	Node::Node(std::vector<Node*>& parents, Operation* operation_): operation(operation_), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
 		int nParents = parents.size();
 		for(int i=0; i<nParents; i++) {
 			setParent(*parents[i]);
-		}
-		if(nodeIsAncestor(this)) {
-			throw SELFANCESTOR;
 		}
 	}
 	
