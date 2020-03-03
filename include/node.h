@@ -81,9 +81,29 @@ namespace ad {
 		}
 	}
 
-	//this is the copy constructor. it will create a new node that simply inherits the value of the previous node.
-	Node::Node(Node& parent): operation(new Inherit), value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
-		setParent(parent);
+	//this is the copy constructor. 
+	//if the node passed in is dynamicallyAllocated (not in scope - only possible when creating nodes with operators), replace that node with self
+	//else, inherit it as a parent
+	Node::Node(Node& node): value(0), derivative(0), evaluated(false), differentiatedParents(false), dynamicallyAllocated(false) {
+		if(node.dynamicallyAllocated) {
+			operation = node.operation;
+			node.operation = nullptr; //so it's not deleted when node is deleted
+			parents = node.parents;
+			for(Node* parent : parents) {
+				int nParentsChildren = parents.size();
+				for(int i=0; i<nParentsChildren; i++) {
+					if(parent->children[i] == &node) {
+						parent->children[i] = this;
+					}
+				}
+			}
+			//can't have children at this point
+			node.unlink(); //so it doesn't delete any dynamic ancestors
+			delete &node;
+		} else {
+			operation = new Inherit;
+			setParent(node);
+		}
 		if(nodeIsAncestor(this)) {
 			throw SELFANCESTOR;
 		}
@@ -125,6 +145,7 @@ namespace ad {
 			}
 			parent->children = newChildVec;
 		}
+		parents.resize(0);
 		
 		//remove self from each child's parent vector
 		for(Node* child : children) {
@@ -136,6 +157,7 @@ namespace ad {
 			}
 			child->parents = newParentVec;
 		}
+		children.resize(0);
 	}
 	
 	void Node::deleteDynamicallyAllocatedAncestors() {
