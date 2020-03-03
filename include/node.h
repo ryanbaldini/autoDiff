@@ -2,8 +2,6 @@
 
 #include <algorithm>
 
-#define SELFANCESTOR "invalid graph: node is an ancestor of itself"
-
 namespace ad {
 	struct Node {
 		Operation* operation;
@@ -101,7 +99,7 @@ namespace ad {
 		}
 		
 		if(nodeIsAncestor(this)) {
-			throw SELFANCESTOR;
+			throw "invalid graph: node is an ancestor of itself";
 		}
 		
 		return *this;
