@@ -90,7 +90,7 @@ namespace ad {
 			node.operation = nullptr; //so it's not deleted when node is deleted
 			parents = node.parents;
 			for(Node* parent : parents) {
-				int nParentsChildren = parents.size();
+				int nParentsChildren = parent->children.size();
 				for(int i=0; i<nParentsChildren; i++) {
 					if(parent->children[i] == &node) {
 						parent->children[i] = this;
