@@ -27,6 +27,11 @@ namespace ad {
 		friend Node& log(Node& parent, double base);
 		friend Node& exp(Node& parent);
 		
+		void operator+=(Node& node);
+		void operator-=(Node& node);
+		void operator*=(Node& node);
+		void operator/=(Node& node);
+		
 		friend class Function;
 	
 	private:
@@ -98,10 +103,10 @@ namespace ad {
 		
 		//if the assignment operator is being called, then this node probably already exists
 		//if it has any connections at all to the system now, then make a copy of it on the heap
-		if(this->parents.size() > 0 || this->children.size() > 0) {
-			this->replaceWithDynamicCopy();
+		if(parents.size() > 0 || children.size() > 0) {
+			replaceWithDynamicCopy();
 		}
-		
+				
 		if(node.dynamicallyAllocated) {
 			replaceNodeWithSelf(node);
 		} else {
@@ -208,7 +213,12 @@ namespace ad {
 		}
 		node->children = this->children;
 		for(Node* child : this->children) {
-			child->parents.push_back(node);
+			int nChildParents = child->parents.size();
+			for(int i=0; i<nChildParents; i++) {
+				if(child->parents[i] == this) {
+					child->parents[i] = node;
+				}
+			}
 		}
 		
 		this->operation = nullptr;
@@ -394,7 +404,7 @@ namespace ad {
 	}
 
 	Node& operator+(Node& parent1, Node& parent2) {
-		Operation* op = new Add(0.0);
+		Operation* op = new Add();
 		Node* node = new Node(parent1, parent2, op);
 		node->dynamicallyAllocated = true;
 		return *node;
@@ -410,6 +420,10 @@ namespace ad {
 	Node& operator+(double x, Node& parent) {
 		return parent+x;
 	};
+	
+	void Node::operator+=(Node& node) {
+		*this = *this + node;
+	}
 
 	Node& operator-(Node& parent1, Node& parent2) {
 		Operation* op = new Subtract();
@@ -424,16 +438,20 @@ namespace ad {
 		node->dynamicallyAllocated = true;
 		return *node;
 	}
-
+	
 	Node& operator-(double x, Node& parent) {
 		Operation* op = new Subtract(x, true);
 		Node* node = new Node(parent, op);
 		node->dynamicallyAllocated = true;
 		return *node;
 	}
+	
+	void Node::operator-=(Node& node) {
+		*this = *this - node;
+	}
 
 	Node& operator*(Node& parent1, Node& parent2) {
-		Operation* op = new Multiply(1.0);
+		Operation* op = new Multiply();
 		Node* node = new Node(parent1, parent2, op);
 		node->dynamicallyAllocated = true;
 		return *node;
@@ -448,6 +466,10 @@ namespace ad {
 
 	Node& operator*(double x, Node& parent) {
 		return parent * x;
+	}
+	
+	void Node::operator*=(Node& node) {
+		*this = (*this) * node;
 	}
 	
 	Node& operator/(Node& parent1, Node& parent2) {
@@ -469,6 +491,10 @@ namespace ad {
 		Node* node = new Node(parent, op);
 		node->dynamicallyAllocated = true;
 		return *node;
+	}
+	
+	void Node::operator/=(Node& node) {
+		*this = (*this) / node;
 	}
 
 	Node& log(Node& parent, double base = -1) {

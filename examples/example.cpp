@@ -23,8 +23,9 @@ int main() {
 		//create downstream nodes via computations
 		ad::Node n1 = (4 + 2*x1 + 3*x2 - 5*x3)/(x1+x3);
 		ad::Node n2 = exp(x1/x2);
-		n2 = n1 * n2; //reassigning is ok. the original n2 node is copied to heap and linked appropriately.
-		ad::Node outputNode = ad::log(n1 * n1 * n2 * n2);
+		n2 += n1 * n2; //reassigning is ok. the original n2 node is copied to heap and linked appropriately.
+		ad::Node outputNode = log(n1 * n1 * n2 * n2);
+		outputNode /= n1;
 
 		//put in function
 		vector<ad::Node*> inputNodes = {&x1,&x2,&x3};

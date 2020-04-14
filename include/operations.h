@@ -36,7 +36,7 @@ namespace ad {
 			return std::vector<double>(x.size(), 1.0);
 		}
 		
-		Add(double constant_): constant(constant_){};
+		Add(double constant_ = 0.0): constant(constant_){};
 	};
 
 	struct Subtract: Operation {
@@ -96,7 +96,7 @@ namespace ad {
 			return output;
 		}
 
-		Multiply(double constant_): constant(constant_){};
+		Multiply(double constant_ = 1.0): constant(constant_){};
 	};
 	
 	struct Divide: Operation {
