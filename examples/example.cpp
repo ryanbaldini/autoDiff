@@ -27,14 +27,12 @@ int main() {
 		ad::Node outputNode = log(n1 * n1 * n2 * n2);
 		outputNode /= n1;
 
-		//put in function
-		vector<ad::Node*> inputNodes = {&x1,&x2,&x3};
-		ad::Function func(inputNodes);
+		//create function with input nodes
+		ad::Function func({&x1,&x2,&x3});
 		
 		//evaluate, differentiate
-		vector<double> input{1,2,3};
-		double output = func.evaluate(input);
-		vector<double> gradient = func.differentiate(input);
+		double output = func.evaluate({12,3,7});
+		vector<double> gradient = func.differentiate({18,1,6});
 		cout << "output: " << output << "\n";
 		cout << "gradient: ";
 		printVector(gradient);
@@ -53,12 +51,10 @@ int main() {
 		ad::Node n2 = exp(x2);
 		x1 = n2*2; //bad!
 		
-		vector<ad::Node*> inputNodes = {&x1,&x2};
-		ad::Function func(inputNodes);
+		ad::Function func({&x1,&x2});
 		
-		vector<double> input{1,2};
-		double output = func.evaluate(input);
-		vector<double> gradient = func.differentiate(input);
+		double output = func.evaluate({1,2});
+		vector<double> gradient = func.differentiate({1,2});
 		cout << "output: " << output << "\n";
 		cout << "gradient: ";
 		printVector(gradient);
@@ -77,12 +73,10 @@ int main() {
 		ad::Node n2 = exp(x2);
 		//two terminal nodes: n1 and n2
 		
-		vector<ad::Node*> inputNodes = {&x1,&x2};
-		ad::Function func(inputNodes);
+		ad::Function func({&x1,&x2});
 		
-		vector<double> input{1,2};
-		double output = func.evaluate(input);
-		vector<double> gradient = func.differentiate(input);
+		double output = func.evaluate({1,2});
+		vector<double> gradient = func.differentiate({1,2});
 		cout << "output: " << output << "\n";
 		cout << "gradient: ";
 		printVector(gradient);
@@ -103,12 +97,10 @@ int main() {
 		ad::Node nOut = n1*n2;
 		n1 = nOut*nOut;
 		
-		vector<ad::Node*> inputNodes = {&x1,&x2,&x2}; //oops! passed in x2 but not x3!
-		ad::Function func(inputNodes);
+		ad::Function func({&x1,&x2,&x2});
 		
-		vector<double> input{1,2,3};
-		double output = func.evaluate(input);
-		vector<double> gradient = func.differentiate(input);
+		double output = func.evaluate({1,2,3});
+		vector<double> gradient = func.differentiate({1,2,3});
 		cout << "output: " << output << "\n";
 		cout << "gradient: ";
 		printVector(gradient);

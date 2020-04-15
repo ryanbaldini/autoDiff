@@ -10,7 +10,7 @@ namespace ad {
 			Node* outputNode;
 
 		public:
-			Function(std::vector<Node*>& inputNodes_);
+			Function(std::vector<Node*> inputNodes_);
 			double evaluate(std::vector<double> args);
 			std::vector<double> differentiate(std::vector<double> args);
 			int nodeCount() {
@@ -18,7 +18,7 @@ namespace ad {
 			}
 	};
 
-	Function::Function(std::vector<Node*>& inputNodes_): inputNodes(inputNodes_), outputNode(nullptr) {
+	Function::Function(std::vector<Node*> inputNodes_): inputNodes(inputNodes_), outputNode(nullptr) {
 		int nInputs = inputNodes.size();
 		if(nInputs == 0) {
 			throw "No inputs to function";
