@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void printVector(vector<double>& vec) {
+void printVector(const vector<double>& vec) {
 	int vecSize = vec.size();
 	for(int i=0; i<vecSize; i++) {
 		cout << vec[i] << ",";
@@ -31,11 +31,9 @@ int main() {
 		ad::Function func({&x1,&x2,&x3});
 		
 		//evaluate, differentiate
-		double output = func.evaluate({12,3,7});
-		vector<double> gradient = func.differentiate({18,1,6});
-		cout << "output: " << output << "\n";
+		cout << "output: " << func.evaluate({12,3,7}) << "\n";
 		cout << "gradient: ";
-		printVector(gradient);
+		printVector(func.differentiate({18,1,6}));
 	}
 	catch(const char* err) {
 		cout << "Error: " << err << "\n";
@@ -53,11 +51,9 @@ int main() {
 		
 		ad::Function func({&x1,&x2});
 		
-		double output = func.evaluate({1,2});
-		vector<double> gradient = func.differentiate({1,2});
-		cout << "output: " << output << "\n";
+		cout << "output: " << func.evaluate({1,2}) << "\n";
 		cout << "gradient: ";
-		printVector(gradient);
+		printVector(func.differentiate({1,2}));
 	}
 	catch(const char* err) {
 		cout << "Error: " << err << "\n";
@@ -75,17 +71,15 @@ int main() {
 		
 		ad::Function func({&x1,&x2});
 		
-		double output = func.evaluate({1,2});
-		vector<double> gradient = func.differentiate({1,2});
-		cout << "output: " << output << "\n";
+		cout << "output: " << func.evaluate({1,2}) << "\n";
 		cout << "gradient: ";
-		printVector(gradient);
+		printVector(func.differentiate({1,2}));
 	}
 	catch(const char* err) {
 		cout << "Error: " << err << "\n";
  	}
 	
-	//invalid graph: not all input nodes are provided to the function
+	//invalid graph: not all origin nodes are provided to the function as input
 	try {
 		cout << "\nExample 4\n";
 		ad::Node x1;
@@ -97,13 +91,11 @@ int main() {
 		ad::Node nOut = n1*n2;
 		n1 = nOut*nOut;
 		
-		ad::Function func({&x1,&x2,&x2});
+		ad::Function func({&x1,&x2,&x2}); //oops! passed in x2 twice, but not x3, which is an origin node to the graph
 		
-		double output = func.evaluate({1,2,3});
-		vector<double> gradient = func.differentiate({1,2,3});
-		cout << "output: " << output << "\n";
+		cout << "output: " << func.evaluate({1,2,3}) << "\n";
 		cout << "gradient: ";
-		printVector(gradient);
+		printVector(func.differentiate({1,2,3}));
 	}
 	catch(const char* err) {
 		cout << "Error: " << err << "\n";
