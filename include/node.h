@@ -28,9 +28,13 @@ namespace ad {
 		friend Node& exp(Node& parent);
 		
 		void operator+=(Node& node);
+		void operator+=(double x);
 		void operator-=(Node& node);
+		void operator-=(double x);
 		void operator*=(Node& node);
+		void operator*=(double x);
 		void operator/=(Node& node);
+		void operator/=(double x);
 		
 		friend class Function;
 	
@@ -424,6 +428,10 @@ namespace ad {
 	void Node::operator+=(Node& node) {
 		*this = *this + node;
 	}
+	
+	void Node::operator+=(double x) {
+		*this = *this + x;
+	}
 
 	Node& operator-(Node& parent1, Node& parent2) {
 		Operation* op = new Subtract();
@@ -449,6 +457,10 @@ namespace ad {
 	void Node::operator-=(Node& node) {
 		*this = *this - node;
 	}
+	
+	void Node::operator-=(double x) {
+		*this = *this - x;
+	}
 
 	Node& operator*(Node& parent1, Node& parent2) {
 		Operation* op = new Multiply();
@@ -470,6 +482,10 @@ namespace ad {
 	
 	void Node::operator*=(Node& node) {
 		*this = (*this) * node;
+	}
+	
+	void Node::operator*=(double x) {
+		*this = (*this) * x;
 	}
 	
 	Node& operator/(Node& parent1, Node& parent2) {
@@ -495,6 +511,10 @@ namespace ad {
 	
 	void Node::operator/=(Node& node) {
 		*this = (*this) / node;
+	}
+	
+	void Node::operator/=(double x) {
+		*this = (*this) / x;
 	}
 
 	Node& log(Node& parent, double base = -1) {

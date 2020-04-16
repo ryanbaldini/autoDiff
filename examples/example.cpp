@@ -25,7 +25,7 @@ int main() {
 		ad::Node n2 = exp(x1/x2);
 		n2 += n1 * n2; //reassigning is ok. the original n2 node is copied to heap and linked appropriately.
 		ad::Node outputNode = log(n1 * n1 * n2 * n2);
-		outputNode /= n1;
+		outputNode /= 2;
 
 		//create function with input nodes
 		ad::Function func({&x1,&x2,&x3});
